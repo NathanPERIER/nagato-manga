@@ -1,5 +1,8 @@
 import io
 import zipfile
+import logging
+
+logger = logging.getLogger(__name__)
 
 def inMemoryZip(files) :
 	buffer = io.BytesIO()
@@ -22,11 +25,13 @@ binary_patterns = {
 	b'GIF87a': 'gif',
 	b'RIFF': 'webp',
 	b'II*\x00': 'tiff',
-	b'MM\x00*': 'tiff'
+	b'MM\x00*': 'tiff',
+	b'BM': 'bmp'
 }
 
 def classifyImage(image: bytes, name) :
 	for pattern, extension in binary_patterns.items() :
 		if image.startswith(pattern) :
 			return f"{name}.{extension}"
+	logger.warning(f"Could not determine the type of an image with binary prefix {image[:10]}")
 	return f"{name}.png"
