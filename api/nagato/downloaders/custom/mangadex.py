@@ -47,7 +47,7 @@ class MangadexDownloader(BaseDownloader) :
 		data = request.get(f"{API_MANGA_URL}/{manga_id}").json()
 		raise NotImplementedError
 
-	def formatChapter(self, chapter_data) :
+	def _formatChapter(self, chapter_data) :
 		attributes = chapter_data['attributes']
 		return {
 			'id': chapter_data['id'],
@@ -61,10 +61,10 @@ class MangadexDownloader(BaseDownloader) :
 		limit = data['limit']
 		total = data['total']
 		nb_req = 1
-		res = [self.formatChapter(chap) for chap in data['data']]
+		res = [self._formatChapter(chap) for chap in data['data']]
 		while nb_req * limit < total :
 			data = request.get(f"{API_MANGA_URL}/{manga_id}/feed?translatedLanguage[]=en&offset={nb_req * limit}").json()
-			res.extend([self.formatChapter(chap) for chap in data['data']])
+			res.extend([self._formatChapter(chap) for chap in data['data']])
 			nb_req += 1
 		return res
 	

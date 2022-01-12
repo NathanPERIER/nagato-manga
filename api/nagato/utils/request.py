@@ -13,3 +13,6 @@ def get(url) :
 
 def getBinary(url) :
 	return get(url).content
+
+def getJson(url) :
+	return get(url).json()
