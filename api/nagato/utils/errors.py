@@ -1,3 +1,6 @@
+from flask import Response
+from functools import wraps
+
 
 class ApiError(Exception) :
 	def __init__(self, message) :
@@ -21,3 +24,18 @@ class ApiFormatError(ApiError) :
 class ApiUrlError(ApiFormatError) :
 	def __init__(self, message) :
 		super().__init__(message)
+
+
+def wrap(route) :
+	@wraps(route)
+	def wrapper() :
+		try :
+			response = route()
+		except ApiNotFoundError as e :
+			return Response(str(e), 404)
+		except ApiFormatError as e :
+			return Response(str(e), 400)
+		except ApiError as e :
+			return Response(str(e), 500)
+		return response
+	return wrapper

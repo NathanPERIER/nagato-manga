@@ -40,7 +40,7 @@ class MangadexDownloader(BaseDownloader) :
 		try:
 			chapter_id = self.getChapterId(url)
 			return self.getMangaForChapter(chapter_id)
-		except ApiUrlError :
+		except ApiUrlError or ApiNotFoundError :
 			raise ApiUrlError(f"URL {url} does not link to any manga nor chapter on the Mangadex website")
 
 	def getMangaInfo(self, manga_id):
