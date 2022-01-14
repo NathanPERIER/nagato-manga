@@ -1,0 +1,14 @@
+{
+	"global": {
+		"chapters.format": "zip"
+	},
+	"api": {
+		"requests.cache.maxlen": 50,
+		"user.auth": true
+	},
+	"downloaders": {
+		"mangadex.org": {
+
+		}
+	}
+}

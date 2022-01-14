@@ -1,0 +1,17 @@
+{
+	"global": {
+		"language.filter": "en",
+		"chapters.destination": "output",
+		"chapters.format": "zip",
+		"chapters.name": "$(id)s"
+	},
+	"api": {
+		"requests.cache.maxlen": 50,
+		"user.auth": true
+	},
+	"downloaders": {
+		"mangadex.org": {
+
+		}
+	}
+}
