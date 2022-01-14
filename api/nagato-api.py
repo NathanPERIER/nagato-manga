@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import base64
 import logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s", datefmt='%d/%m/%Y %H:%M:%S')
 
@@ -8,6 +9,7 @@ from flask import Flask, Response, request
 from nagato.downloaders.base import BaseDownloader
 from nagato.downloaders import listSites, siteForURL, downloaderForURL
 from nagato.utils import errors
+from nagato.utils import http
 
 app = Flask(__name__)
 
@@ -55,28 +57,47 @@ def getResourceSite() :
 	site = siteForURL(url)
 	res = {
 		'url': url,
-		'site': site
+		'registered': site is not None
 	}
+	if site is not None :
+		res['site'] = site
 	return Response(json.dumps(res), 200, content_type='application/json')
 
 
-# /api/manga/info
-def getMangaInfo() :
-	pass
-
-# /api/chapter/info
-def getChapterInfo() :
-	pass
-
-
-# /api/manga/chapters
-def getMangaChapters() :
-	pass
+@app.route('/api/manga/info', methods=['GET'])
+@errors.wrap
+@http.mangaFromArgs
+def getMangaInfo(dl: BaseDownloader, manga_id) :
+	res = dl.getMangaInfo(manga_id)
+	return Response(json.dumps(res), 200, content_type='application/json')
 
 
-# /api/manga/cover
-def getMangaCover() :
-	pass
+@app.route('/api/chapter/info', methods=['GET'])
+@errors.wrap
+@http.chapterFromArgs
+def getChapterInfo(dl: BaseDownloader, chapter_id) :
+	res = dl.getChapterInfo(chapter_id)
+	return Response(json.dumps(res), 200, content_type='application/json')
+
+
+@app.route('/api/manga/chapters', methods=['GET'])
+@errors.wrap
+@http.mangaFromArgs
+def getMangaChapters(dl: BaseDownloader, manga_id) :
+	res = dl.getChapters(manga_id)
+	return Response(json.dumps(res), 200, content_type='application/json')
+
+
+@app.route('/api/manga/cover', methods=['GET'])
+@errors.wrap
+@http.mangaFromArgs
+def getMangaCover(dl: BaseDownloader, manga_id) :
+	res = dl.getCover(manga_id)
+	mime_type = http.imageMimeType(res)
+	if 'base64' in request.args and request.args.get('base64') == 'true' :
+		b64 = base64.b64encode(res)
+		return Response(b64, 200, content_type='text/plain', headers={'Original-Content-Type': mime_type})
+	return Response(res, 200, content_type=mime_type)
 
 
 # /api/download/chapter
@@ -87,14 +108,3 @@ def postChapterDownloadParam() :
 def postChaptersDownloadBody() :
 	pass
 
-"""
-url = 'https://mangadex.org/chapter/19e28470-4239-4cd5-8a56-05f4cf589478/1'
-
-dl_class = downloaderForURL(url)
-
-dl: BaseDownloader = dl_class()
-
-chapter_id = dl.getChapterId(url)
-
-dl.saveToZip([chapter_id])
-"""

@@ -16,8 +16,7 @@ class BaseDownloader :
 		if dl_method not in _dl_methods :
 			raise ValueError(f"Unrecognized download method {dl_method}")
 		self.saveChapter = _dl_methods[dl_method]
-		self._destination = config['chapters.destination']
-		
+		self._destination = config['chapters.destination'] # TODO test and create folder
 		self._format = config['chapters.format']
 		
 
@@ -30,6 +29,9 @@ class BaseDownloader :
 	def getMangaInfo(self, manga_id):
 		raise NotImplementedError
 	
+	def getCover(self, manga_id) :
+		raise NotImplementedError
+
 	def getChapters(self, manga_id) :
 		raise NotImplementedError
 	 

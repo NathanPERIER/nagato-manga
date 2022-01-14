@@ -35,3 +35,5 @@ def classifyImage(image: bytes, name) :
 			return f"{name}.{extension}"
 	logger.warning(f"Could not determine the type of an image with binary prefix {image[:10]}")
 	return f"{name}.png"
+
+

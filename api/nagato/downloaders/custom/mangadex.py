@@ -46,9 +46,20 @@ class MangadexDownloader(BaseDownloader) :
 		except ApiUrlError or ApiNotFoundError :
 			raise ApiUrlError(f"URL {url} does not link to any manga nor chapter on the Mangadex website")
 
-	def getMangaInfo(self, manga_id):
+	def getMangaInfo(self, manga_id) :
 		data = self._requester.requestJson(f"{API_MANGA_URL}/{manga_id}")
-		raise NotImplementedError
+		return data
+	
+	def _getCoverFilename(self, manga_id) :
+		data = self._requester.requestJson(f"{API_MANGA_URL}/{manga_id}?includes[]=cover_art")
+		for elt in data['data']['relationships'] :
+			if elt['type'] == 'cover_art' :
+				return elt['attributes']['fileName']
+		return None
+
+	def getCover(self, manga_id) -> bytes:
+		cover_file = self._getCoverFilename(manga_id)
+		return self._requester.requestBinary(f"{CDN_URL}/covers/{manga_id}/{cover_file}")
 
 	def _formatChapter(self, chapter_data) :
 		attributes = chapter_data['attributes']
@@ -72,13 +83,16 @@ class MangadexDownloader(BaseDownloader) :
 		return res
 	
 	def getChapterInfo(self, chapter_id): 
-		raise NotImplementedError
+		data = self._requester.requestJson(f"{API_CHAPTER_URL}/{chapter_id}")
+		return data
 	
 	def downloadChapter(self, chapter_id) :
-		data = self._requester.requestJson(f"{API_ATHOME_URL}/{chapter_id}")['chapter']
-		hash = data['hash']
-		images = data['data']
-		return [self._requester.requestBinary(f"{CDN_URL}/data/{hash}/{image}") for image in images]
+		data = self._requester.requestJson(f"{API_ATHOME_URL}/{chapter_id}")
+		base_url = data['baseUrl']
+		chapter = data['chapter']
+		hash = chapter['hash']
+		images = chapter['data']
+		return [self._requester.requestBinary(f"{base_url}/data/{hash}/{image}") for image in images]
 
 
 	
