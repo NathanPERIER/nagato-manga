@@ -8,7 +8,7 @@ from time import sleep
 
 logger = logging.getLogger(__name__)
 
-__request_cache_maxlen = config.getApiConf('requests.cache.maxlen')
+_request_cache_maxlen = config.getApiConf('requests.cache.maxlen')
 
 
 class HttpCache :
@@ -33,10 +33,10 @@ class HttpCache :
 		self._urls.append(url)
 
 
-if __request_cache_maxlen > 0 :
-	__request_cache = HttpCache(__request_cache_maxlen)
+if _request_cache_maxlen > 0 :
+	_request_cache = HttpCache(_request_cache_maxlen)
 else :
-	__request_cache = None
+	_request_cache = None
 
 
 class Requester :
@@ -67,12 +67,12 @@ class Requester :
 	
 	def requestMap(self, url, mapper, cache=True) :
 		if cache :
-			res = __request_cache.get(url)
+			res = _request_cache.get(url)
 			if res is not None :
 				return res
 		res = mapper(self._requestURL(url))
 		if cache :
-			__request_cache.add(url, res)
+			_request_cache.add(url, res)
 		return res
 
 	def requestBinary(self, url, cache=False) -> bytes :
@@ -129,7 +129,7 @@ class RequesterBuilder :
 			del self._handlers[error_code]
 
 	def build(self) -> Requester :
-		if __request_cache_maxlen > 0 :
+		if _request_cache_maxlen > 0 :
 			return Requester(self._verb, self._headers, self._handlers)
 		return RequesterNoCache(self._verb, self._headers, self._handlers)
 

@@ -24,16 +24,17 @@ def _transformOnAssign(d, key, new_val) :
 def _loadEnvIfPossible(conf, env_conf, conf_name) :
 	res = conf[conf_name]
 	if conf_name in env_conf :
-		for k, e in env_conf[conf_name] :
+		for k, e in env_conf[conf_name].items() :
 			if e in os.environ :
 				_transformOnAssign(res, k, os.getenv(e))
+	return res
 
 
 __global_conf = _loadEnvIfPossible(conf, env_conf, 'global')
 
 __api_conf = _loadEnvIfPossible(conf, env_conf, 'api')
 
-__downloaders_conf = {site: _loadEnvIfPossible(conf, env_conf['downloaders'], site) for site, conf in conf['downloaders']}
+__downloaders_conf = {site: _loadEnvIfPossible(conf['downloaders'], env_conf['downloaders'], site) for site in conf['downloaders']}
 
 
 def getApiConf(key) :
