@@ -42,5 +42,5 @@ def getApiConf(key) :
 
 def getDownloaderConf(site) :
 	if site in __downloaders_conf :
-		return __downloaders_conf[site]
+		return {**__global_conf, **__downloaders_conf[site]}
 	return __global_conf
