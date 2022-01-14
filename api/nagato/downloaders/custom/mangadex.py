@@ -1,7 +1,7 @@
 from nagato.downloaders import custom
 from nagato.downloaders.base import BaseDownloader
 from nagato.utils.errors import ApiUrlError, ApiNotFoundError
-from nagato.utils import request
+from nagato.utils.request import RequesterBuilder
 
 import re
 
@@ -19,6 +19,7 @@ class MangadexDownloader(BaseDownloader) :
 	
 	def __init__(self) :
 		super().__init__()
+		self._requester = RequesterBuilder.get().build()
 
 	def getChapterId(self, url) :
 		m = chapter_page_reg.fullmatch(url)
@@ -27,7 +28,7 @@ class MangadexDownloader(BaseDownloader) :
 		raise ApiUrlError(f"URL {url} does not link to any manga on the Mangadex website")
 	
 	def getMangaForChapter(self, chapter_id) :
-		data = request.get(f"{API_CHAPTER_URL}/{chapter_id}").json()['data']['relationships']
+		data = self._requester.requestJson(f"{API_CHAPTER_URL}/{chapter_id}")['data']['relationships']
 		for elt in data :
 			if elt['type'] == 'manga' :
 				return elt['id']
@@ -44,7 +45,7 @@ class MangadexDownloader(BaseDownloader) :
 			raise ApiUrlError(f"URL {url} does not link to any manga nor chapter on the Mangadex website")
 
 	def getMangaInfo(self, manga_id):
-		data = request.get(f"{API_MANGA_URL}/{manga_id}").json()
+		data = self._requester.requestJson(f"{API_MANGA_URL}/{manga_id}")
 		raise NotImplementedError
 
 	def _formatChapter(self, chapter_data) :
@@ -57,13 +58,13 @@ class MangadexDownloader(BaseDownloader) :
 		}
 
 	def getChapters(self, manga_id) :
-		data = request.get(f"{API_MANGA_URL}/{manga_id}/feed?translatedLanguage[]=en&offset=0").json()
+		data = self._requester.requestJson(f"{API_MANGA_URL}/{manga_id}/feed?translatedLanguage[]=en&offset=0")
 		limit = data['limit']
 		total = data['total']
 		nb_req = 1
 		res = [self._formatChapter(chap) for chap in data['data']]
 		while nb_req * limit < total :
-			data = request.get(f"{API_MANGA_URL}/{manga_id}/feed?translatedLanguage[]=en&offset={nb_req * limit}").json()
+			data = self._requester.requestJson(f"{API_MANGA_URL}/{manga_id}/feed?translatedLanguage[]=en&offset={nb_req * limit}")
 			res.extend([self._formatChapter(chap) for chap in data['data']])
 			nb_req += 1
 		return res
@@ -72,10 +73,10 @@ class MangadexDownloader(BaseDownloader) :
 		raise NotImplementedError
 	
 	def downloadChapter(self, chapter_id) :
-		data = request.get(f"{API_ATHOME_URL}/{chapter_id}").json()['chapter']
+		data = self._requester.requestJson(f"{API_ATHOME_URL}/{chapter_id}")['chapter']
 		hash = data['hash']
 		images = data['data']
-		return [request.getBinary(f"{CDN_URL}/data/{hash}/{image}") for image in images]
+		return [self._requester.requestBinary(f"{CDN_URL}/data/{hash}/{image}") for image in images]
 
 
 	
