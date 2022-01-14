@@ -112,6 +112,9 @@ class RequesterBuilder :
 	
 	def delete() :
 		return RequesterBuilder('DELETE')
+
+	def head() :
+		return RequesterBuilder('HEAD')
 	
 	def setHeader(self, header, value) :
 		self._headers[header] = value
