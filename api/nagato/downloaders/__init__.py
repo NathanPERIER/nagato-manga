@@ -1,6 +1,7 @@
 from nagato.downloaders.base import BaseDownloader
 from nagato.downloaders.custom import custom_downloaders
 from nagato.utils.errors import ApiNotFoundError
+from nagato.utils import config 
 import re
 
 scheme_reg = re.compile(r'[a-zA-Z][a-zA-Z0-9+-.]*://(.*)')
@@ -9,7 +10,7 @@ available_downloaders = {}
 
 def instanciate_downloaders() :
 	for site, downloader_class in sorted(custom_downloaders.items(), key = lambda e : len(e[0]), reverse=True) :
-		available_downloaders[site] = downloader_class()
+		available_downloaders[site] = downloader_class(config.getDownloaderConf(site))
 
 
 def listSites() :

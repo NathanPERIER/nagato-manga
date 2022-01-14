@@ -14,11 +14,13 @@ API_ATHOME_URL = f"{API_URL}/at-home/server"
 manga_page_reg = re.compile(r'https://mangadex\.org/title/([a-z0-9\-]+)/.*')
 chapter_page_reg = re.compile(r'https://mangadex\.org/chapter/([a-z0-9\-]+)(?:/[0-9]+)?')
 
+
 @custom.register(site='mangadex.org')
 class MangadexDownloader(BaseDownloader) :
 	
-	def __init__(self) :
-		super().__init__()
+	def __init__(self, config) :
+		super().__init__(config)
+		self._lang = config['language.filter']
 		self._requester = RequesterBuilder.get().build()
 
 	def getChapterId(self, url) :
@@ -58,13 +60,13 @@ class MangadexDownloader(BaseDownloader) :
 		}
 
 	def getChapters(self, manga_id) :
-		data = self._requester.requestJson(f"{API_MANGA_URL}/{manga_id}/feed?translatedLanguage[]=en&offset=0")
+		data = self._requester.requestJson(f"{API_MANGA_URL}/{manga_id}/feed?translatedLanguage[]={self._lang}&offset=0")
 		limit = data['limit']
 		total = data['total']
 		nb_req = 1
 		res = [self._formatChapter(chap) for chap in data['data']]
 		while nb_req * limit < total :
-			data = self._requester.requestJson(f"{API_MANGA_URL}/{manga_id}/feed?translatedLanguage[]=en&offset={nb_req * limit}")
+			data = self._requester.requestJson(f"{API_MANGA_URL}/{manga_id}/feed?translatedLanguage[]={self._lang}&offset={nb_req * limit}")
 			res.extend([self._formatChapter(chap) for chap in data['data']])
 			nb_req += 1
 		return res
