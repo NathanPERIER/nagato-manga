@@ -1,17 +1,20 @@
 #!/usr/bin/python3
-import base64
-import logging
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s", datefmt='%d/%m/%Y %H:%M:%S')
 
-import json
-from flask import Flask, Response, request
+import logging
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s", datefmt='%d/%m/%Y %H:%M:%S')
 
 from nagato.downloaders.base import BaseDownloader
 from nagato.downloaders import listSites, siteForURL, downloaderForURL
 from nagato.utils import errors
 from nagato.utils import http
 
+import json
+import base64
+from flask import Flask, Response, request
+
 app = Flask(__name__)
+
 
 @app.route('/api/ping', methods=['GET'])
 def getPing() :
@@ -80,14 +83,6 @@ def getChapterInfo(dl: BaseDownloader, chapter_id) :
 	return Response(json.dumps(res), 200, content_type='application/json')
 
 
-@app.route('/api/manga/chapters', methods=['GET'])
-@errors.wrap
-@http.mangaFromArgs
-def getMangaChapters(dl: BaseDownloader, manga_id) :
-	res = dl.getChapters(manga_id)
-	return Response(json.dumps(res), 200, content_type='application/json')
-
-
 @app.route('/api/manga/cover', methods=['GET'])
 @errors.wrap
 @http.mangaFromArgs
@@ -100,11 +95,22 @@ def getMangaCover(dl: BaseDownloader, manga_id) :
 	return Response(res, 200, content_type=mime_type)
 
 
+@app.route('/api/manga/chapters', methods=['GET'])
+@errors.wrap
+@http.mangaFromArgs
+def getMangaChapters(dl: BaseDownloader, manga_id) :
+	res = dl.getChapters(manga_id)
+	return Response(json.dumps(res), 200, content_type='application/json')
+
+
 # /api/download/chapter
-def postChapterDownloadParam() :
+# @errors.wrap
+# @http.chapterFromArgs
+def postChapterDownloadParam(dl: BaseDownloader, chapter_id) :
 	pass
 
 # /api/download/chapters
+# @errors.wrap
 def postChaptersDownloadBody() :
 	pass
 
