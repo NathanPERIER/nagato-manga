@@ -2,6 +2,20 @@
 
 This file lists the available endpoints for the API.
 
+- [`GET /api/ping`](#get-apiping)
+- [`GET /api/version`](#get-apiversion)
+- [`GET /api/sites`](#get-apisites)
+- [`GET /api/resource/site`](#get-apiresourcesite)
+- [`GET /api/manga/id`](#get-apimangaid)
+- [`GET /api/chapter/id`](#get-apichapterid)
+- [`GET /api/manga/info`](#get-apimangainfo)
+- [`GET /api/chapter/info`](#get-apichapterinfo)
+- [`GET /api/manga/cover`](#get-apimangacover)
+- [`GET /api/manga/chapters`](#get-apimangachapters)
+- [`POST /api/download/chapter`](#post-apidownloadchapter)
+- [`POST /api/download/chapters`](#post-apidownloadchapters)
+
+
 ## `GET /api/ping`
 
 ### Example request
@@ -18,6 +32,8 @@ Content-Type: text/plain
 
 pong
 ```
+
+[`^ Back to top ^`][top]
 
 
 ## `GET /api/version`
@@ -36,6 +52,8 @@ Content-Type: text/plain
 
 1.1
 ```
+
+[`^ Back to top ^`][top]
 
 
 ## `GET /api/sites`
@@ -57,100 +75,7 @@ Content-Type: application/json
 ["mangadex.org"]
 ```
 
-## `GET /api/manga/id`
-
-Retrieves the ID of a manga on a website supported by the application.
-
-### Request parameters
-
-- `url`: The URL of the manga on the website (required)
-
-### Example request
-
-```Bash
-curl -X GET 'localhost:8090/api/manga/id?url=https://mangadex.org/title/cfc3d743-bd89-48e2-991f-63e680cc4edf/dr-stone'
-```
-
-### Example response
-
-```
-HTTP/1.1 200 OK
-Content-Type: application/json
-
-{
-	"url": "https://mangadex.org/title/cfc3d743-bd89-48e2-991f-63e680cc4edf/dr-stone",
-	"id": "cfc3d743-bd89-48e2-991f-63e680cc4edf"
-}
-```
-
-If the site is not known to the application :
-```
-HTTP/1.1 404 NOT FOUND
-
-No downloader found for URL "example.com"
-```
-
-If the URL doesn't link to any actual manga on the website :
-```
-HTTP/1.1 400 BAD REQUEST
-
-URL https://mangadex.org does not link to any manga nor chapter on the Mangadex website
-```
-
-If the url has not been specified in the request :
-```
-HTTP/1.1 400 BAD REQUEST
-
-Request is missing the URL parameter
-```
-
-
-## `GET /api/chapter/id`
-
-Retrieves the ID of a chapter on a website supported by the application.
-
-### Request parameters
-
-- `url`: The URL of the chapter on the website (required)
-
-### Example request
-
-```Bash
-curl -X GET 'localhost:8090/api/chapter/id?url=https://mangadex.org/chapter/ec562f76-4654-4621-8198-247622955fdd/1'
-```
-
-### Example response
-
-```
-HTTP/1.1 200 OK
-Content-Type: application/json
-
-{
-	"url": "https://mangadex.org/chapter/ec562f76-4654-4621-8198-247622955fdd/1",
-	"id": "ec562f76-4654-4621-8198-247622955fdd"
-}
-```
-
-If the site is not known to the application :
-```
-HTTP/1.1 404 NOT FOUND
-
-No downloader found for URL "example.com"
-```
-
-If the URL doesn't link to any actual chapter on the website :
-```
-HTTP/1.1 400 BAD REQUEST
-
-URL https://mangadex.org does not link to any chapter on the Mangadex website
-```
-
-If the url has not been specified in the request :
-```
-HTTP/1.1 400 BAD REQUEST
-
-Request is missing the URL parameter
-```
+[`^ Back to top ^`][top]
 
 
 ## `GET /api/resource/site`
@@ -206,6 +131,108 @@ Content-Type: application/json
 	"site": "mangadex.org"
 }
 ```
+
+[`^ Back to top ^`][top]
+
+
+## `GET /api/manga/id`
+
+Retrieves the ID of a manga on a website supported by the application.
+
+### Request parameters
+
+- `url`: The URL of the manga on the website (required)
+
+### Example request
+
+```Bash
+curl -X GET 'localhost:8090/api/manga/id?url=https://mangadex.org/title/cfc3d743-bd89-48e2-991f-63e680cc4edf/dr-stone'
+```
+
+### Example response
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+	"url": "https://mangadex.org/title/cfc3d743-bd89-48e2-991f-63e680cc4edf/dr-stone",
+	"id": "cfc3d743-bd89-48e2-991f-63e680cc4edf"
+}
+```
+
+If the site is not known to the application :
+```
+HTTP/1.1 404 NOT FOUND
+
+No downloader found for URL "example.com"
+```
+
+If the URL doesn't link to any actual manga on the website :
+```
+HTTP/1.1 400 BAD REQUEST
+
+URL https://mangadex.org does not link to any manga nor chapter on the Mangadex website
+```
+
+If the url has not been specified in the request :
+```
+HTTP/1.1 400 BAD REQUEST
+
+Request is missing the URL parameter
+```
+
+[`^ Back to top ^`][top]
+
+
+## `GET /api/chapter/id`
+
+Retrieves the ID of a chapter on a website supported by the application.
+
+### Request parameters
+
+- `url`: The URL of the chapter on the website (required)
+
+### Example request
+
+```Bash
+curl -X GET 'localhost:8090/api/chapter/id?url=https://mangadex.org/chapter/ec562f76-4654-4621-8198-247622955fdd/1'
+```
+
+### Example response
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+	"url": "https://mangadex.org/chapter/ec562f76-4654-4621-8198-247622955fdd/1",
+	"id": "ec562f76-4654-4621-8198-247622955fdd"
+}
+```
+
+If the site is not known to the application :
+```
+HTTP/1.1 404 NOT FOUND
+
+No downloader found for URL "example.com"
+```
+
+If the URL doesn't link to any actual chapter on the website :
+```
+HTTP/1.1 400 BAD REQUEST
+
+URL https://mangadex.org does not link to any chapter on the Mangadex website
+```
+
+If the url has not been specified in the request :
+```
+HTTP/1.1 400 BAD REQUEST
+
+Request is missing the URL parameter
+```
+
+[`^ Back to top ^`][top]
 
 
 ## `GET /api/manga/info`
@@ -278,6 +305,8 @@ Content-Type: application/json
 }
 ```
 
+[`^ Back to top ^`][top]
+
 
 ## `GET /api/chapter/info`
 
@@ -332,6 +361,8 @@ Content-Type: application/json
 }
 ```
 
+[`^ Back to top ^`][top]
+
 
 ## `GET /api/manga/cover`
 
@@ -370,6 +401,8 @@ Original-Content-Type: image/jpeg
 
 <base64 data>
 ```
+
+[`^ Back to top ^`][top]
 
 
 ## `GET /api/manga/chapters`
@@ -424,8 +457,18 @@ Content-Type: application/json
 }
 ```
 
+[`^ Back to top ^`][top]
+
 
 ## `POST /api/download/chapter`
 
+[`^ Back to top ^`][top]
+
+
 ## `POST /api/download/chapters`
 
+[`^ Back to top ^`][top]
+
+
+
+[top]: #nagato-api
