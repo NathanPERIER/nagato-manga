@@ -53,6 +53,7 @@ class Requester :
 		nb_attempts = 0
 		while keep_going :
 			nb_attempts += 1
+			logging.info(f"Request to \"{url}\"")
 			res = requests.request(self._verb, url, headers=self._headers)
 			if res.ok :
 				return res

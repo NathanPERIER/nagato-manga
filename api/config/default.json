@@ -2,7 +2,8 @@
 	"global": {
 		"chapters.destination": "output",
 		"chapters.method": "zip",
-		"chapters.format": "$(id)s"
+		"chapters.format": "$(id)s",
+		"chapters.separate": true
 	},
 	"api": {
 		"requests.cache.maxlen": 50,

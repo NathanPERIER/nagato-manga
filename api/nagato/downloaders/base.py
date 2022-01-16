@@ -1,5 +1,10 @@
 from nagato.utils.compression import makeCbz
 
+import os
+import logging
+
+logger = logging.getLogger(__name__)
+
 _dl_methods = {}
 
 def dl_method(method) :
@@ -17,7 +22,16 @@ class BaseDownloader :
 			raise ValueError(f"Unrecognized download method {dl_method}")
 		self.saveChapter = _dl_methods[dl_method]
 		self._destination = config['chapters.destination'] # TODO test and create folder
+		if not os.path.exists(self._destination) :
+			logger.info(f"Recursively creating directory \"{self._destination}\"")
+			os.makedirs(self._destination)
+		if not os.path.isdir(self._destination) :
+			raise NotADirectoryError(f"\"{self._destination}\" is a file")
 		self._format = config['chapters.format']
+		if config['chapters.separate'] :
+			self.getDestinationFolder = self.destFolderSeparated
+		else :
+			self.getDestinationFolder = self.destFolderMixed
 		
 
 	def getMangaId(self, url):
@@ -36,9 +50,13 @@ class BaseDownloader :
 		raise NotImplementedError
 	 
 	def downloadChapters(self, ids) :
+		manga_info = None
 		for chapter_id in ids :
 			images = self.downloadChapter(chapter_id)
-			self.saveChapter(chapter_id, images)
+			chapter_info = self.getChapterInfo(chapter_id)
+			if manga_info is None :
+				manga_info = self.getMangaInfo(chapter_info['manga'])
+			self.saveChapter(self, images, manga_info, chapter_info)
 	
 	def downloadChapter(self, chapter_id) :
 		raise NotImplementedError
@@ -46,18 +64,35 @@ class BaseDownloader :
 	def getChapterInfo(self, chapter_id) :
 		raise NotImplementedError
 
-	def saveChapter(self, chapter_id, images) :
+	def saveChapter(self, images, manga_info, chapter_info) :
 		raise NotImplementedError
-	
+
 	@dl_method('zip')
-	def saveToZip(self, chapter_id, images) :
-		with open(f"{chapter_id}.zip", 'wb') as f :
+	def saveToZip(self, images, manga_info, chapter_info) :
+		folder = self.getDestinationFolder(manga_info)
+		filename = self.getFilename(manga_info, chapter_info)
+		with open(os.path.join(folder, filename), 'wb') as f :
 			f.write(makeCbz(images))
 	
 	@dl_method('cbz')
-	def saveToCbz(self, chapter_id, images) :
+	def saveToCbz(self, images, manga_info, chapter_info) :
 		raise NotImplementedError
 
 	@dl_method('files')
-	def saveAsFiles(self, chapter_id, images) :
+	def saveAsFiles(self, images, manga_info, chapter_info) :
 		raise NotImplementedError
+
+	def getFilename(self, manga_info, chapter_info) :
+		return f"{chapter_info['title']}.zip"
+
+	def getDestinationFolder(self, manga_info) :
+		raise NotImplementedError
+	
+	def destFolderSeparated(self, manga_info) :
+		path = os.path.join(self._destination, manga_info['title'])
+		if not os.path.exists(path) :
+			os.mkdir(path)
+		return path
+	
+	def destFolderMixed(self, manga_info) :
+		return self._destination
