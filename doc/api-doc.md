@@ -14,6 +14,7 @@ curl -X GET 'localhost:8090/api/ping'
 
 ```
 HTTP/1.1 200 OK
+Content-Type: text/plain
 
 pong
 ```
@@ -31,6 +32,7 @@ curl -X GET 'localhost:8090/api/version'
 
 ```
 HTTP/1.1 200 OK
+Content-Type: text/plain
 
 1.1
 ```
@@ -50,7 +52,7 @@ curl -X GET 'localhost:8090/api/sites'
 
 ```
 HTTP/1.1 200 OK
-Content-type: application/json
+Content-Type: application/json
 
 ["mangadex.org"]
 ```
@@ -73,7 +75,7 @@ curl -X GET 'localhost:8090/api/manga/id?url=https://mangadex.org/title/cfc3d743
 
 ```
 HTTP/1.1 200 OK
-Content-type: application/json
+Content-Type: application/json
 
 {
 	"url": "https://mangadex.org/title/cfc3d743-bd89-48e2-991f-63e680cc4edf/dr-stone",
@@ -121,7 +123,7 @@ curl -X GET 'localhost:8090/api/chapter/id?url=https://mangadex.org/chapter/ec56
 
 ```
 HTTP/1.1 200 OK
-Content-type: application/json
+Content-Type: application/json
 
 {
 	"url": "https://mangadex.org/chapter/ec562f76-4654-4621-8198-247622955fdd/1",
@@ -173,7 +175,7 @@ curl -X GET 'localhost:8090/api/resource/site?url=https://mangadex.org/chapter/e
 If the site is known :
 ```
 HTTP/1.1 200 OK
-Content-type: application/json
+Content-Type: application/json
 
 {
 	"url": "https://mangadex.org/chapter/ec562f76-4654-4621-8198-247622955fdd/1",
@@ -185,7 +187,7 @@ Content-type: application/json
 If the site is not known :
 ```
 HTTP/1.1 200 OK
-Content-type: application/json
+Content-Type: application/json
 
 {
 	"url": "https://example.com",
@@ -196,7 +198,7 @@ Content-type: application/json
 This also works, although the URL is not that of a manga or a chapter :
 ```
 HTTP/1.1 200 OK
-Content-type: application/json
+Content-Type: application/json
 
 {
 	"url": "https://mangadex.org/my/history",
@@ -239,6 +241,43 @@ Retrieves some general information on a manga. The result is a JSON object with 
 curl -X GET 'localhost:8090/api/manga/info?url=https://mangadex.org/title/cfc3d743-bd89-48e2-991f-63e680cc4edf/dr-stone'
 ```
 
+### Example response
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+	"id": "cfc3d743-bd89-48e2-991f-63e680cc4edf", 
+	"title": "Dr. Stone", 
+	"alt_titles": [
+		{"tr": "Doktor Ta\u015f"}, 
+		{"en": "Dr.Stone"}, 
+		{"ru": "\u0414\u043e\u043a\u0442\u043e\u0440 \u0421\u0442\u043e\u0443\u043d"}, 
+		{"ru": "\u041f\u0440\u043e\u0444\u0435\u0441\u0441\u043e\u0440 \u043a\u0430\u043c\u0435\u043d\u043d\u043e\u0433\u043e \u0432\u0435\u043a\u0430"}, 
+		{"ja": "\u30c9\u30af\u30bf\u30fc\u30b9\u30c8\u30fc\u30f3"}
+	], 
+	"description": "...", 
+	"authors": [
+		{
+			"id": "6afbe7ae-36a4-4d95-aacc-610bd9c64332", 
+			"name": "Inagaki Riichiro"
+		}
+	], 
+	"artists": [
+		{
+			"id": "e2363c83-22b9-45ba-af27-2c7bcbef7d63", 
+			"name": "Boichi"
+		}
+	], 
+	"tags": ["Sci-Fi", "Action", "Comedy", "Survival", "Adventure", "Post-Apocalyptic", "Drama", "Slice of Life", "Cooking", "Supernatural", "Mystery"], 
+	"lang": "ja", 
+	"date": {"day": null, "month": null, "year": 2017}, 
+	"rating": "safe", 
+	"status": "ongoing"
+}
+```
+
 
 ## `GET /api/chapter/info`
 
@@ -271,6 +310,28 @@ Retrieves some general information on a chapter. The result is a JSON object wit
 curl -X GET 'localhost:8090/api/chapter/info?url=https://mangadex.org/chapter/ec562f76-4654-4621-8198-247622955fdd/1'
 ```
 
+### Example response
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+	"volume": 1, 
+	"chapter": 1, 
+	"title": "Z=1: Stone World", 
+	"lang": "en", 
+	"pages": 48, 
+	"team": {
+		"id": "9348bde7-ed3e-43e7-88c6-0edcd1debb88", 
+		"name": "Mangastream", 
+		"site": "https://readms.net/"
+	}, 
+	"id": "ec562f76-4654-4621-8198-247622955fdd", 
+	"manga": "cfc3d743-bd89-48e2-991f-63e680cc4edf"
+}
+```
+
 
 ## `GET /api/manga/cover`
 
@@ -288,7 +349,26 @@ Retrieves the cover art for a manga.
 ### Example request
 
 ```Bash
-curl -X GET 'localhost:8090/api/manga/cover?site=mangadex.org&id=cfc3d743-bd89-48e2-991f-63e680cc4edf&base64=true'
+curl -X GET 'localhost:8090/api/manga/cover?site=mangadex.org&id=cfc3d743-bd89-48e2-991f-63e680cc4edf&base64=false'
+```
+
+### Example response
+
+Without the `base64` parameter, or `base64 != true`:
+```
+HTTP/1.1 200 OK
+Content-Type: image/jpeg
+
+<binary data>
+```
+
+With `base64=true` :
+```
+HTTP/1.1 200 OK
+Content-Type: text/plain
+Original-Content-Type: image/jpeg
+
+<base64 data>
 ```
 
 
@@ -319,6 +399,29 @@ Retrieves the list of chapters for a manga. The result is a JSON object where th
 
 ```Bash
 curl -X GET 'localhost:8090/api/manga/chapters?url=https://mangadex.org/title/cfc3d743-bd89-48e2-991f-63e680cc4edf/dr-stone'
+```
+
+### Example response
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+	"f97f19bb-d12d-4b7c-93fb-58c5ace73d09": {
+		"volume": 1, 
+		"chapter": 1, 
+		"title": "Stone World", 
+		"lang": "en", 
+		"pages": 48, 
+		"team": {
+			"id": "58b9d508-86d0-48f1-866a-68323a177743", 
+			"name": "Jaimini's~box~", 
+			"site": "http://jaiminisbox.com"
+		}
+	},
+	...
+}
 ```
 
 
