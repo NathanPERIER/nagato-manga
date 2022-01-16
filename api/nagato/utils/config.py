@@ -15,7 +15,7 @@ with open(__env_conf_file, 'r') as f :
 
 def _transformOnAssign(d, key, new_val) :
 	if key in d :
-		old_val = key[d]
+		old_val = d[key]
 		if type(old_val) != str :
 			d[key] = json.loads(new_val)
 			return
