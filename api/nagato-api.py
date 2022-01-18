@@ -5,7 +5,7 @@ import logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s", datefmt='%d/%m/%Y %H:%M:%S')
 
 from nagato.downloaders.base import BaseDownloader
-from nagato.downloaders import listSites, siteForURL, downloaderForURL
+from nagato.downloaders import downloaderForSite, listSites, siteForURL, downloaderForURL
 from nagato.utils import errors
 from nagato.utils import http
 
@@ -110,8 +110,12 @@ def postChapterDownloadParam(dl: BaseDownloader, chapter_id) :
 	dl.downloadChapters([chapter_id])
 	return Response(status=200)
 
-# /api/download/chapters
-# @errors.wrap
+@app.route('/api/download/chapters', methods=['POST'])
+@errors.wrap
 def postChaptersDownloadBody() :
-	pass
+	data = request.get_json()
+	for site, chaper_ids in data.items() :
+		dl = downloaderForSite(site)
+		dl.downloadChapters(chaper_ids)
+	return Response(status=200)
 

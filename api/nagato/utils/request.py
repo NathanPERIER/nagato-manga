@@ -66,21 +66,21 @@ class Requester :
 				raise ApiQueryError(f"Request to {url} failed with return code {res.status_code} {res.reason}")
 		raise ApiQueryError(f"Request to {url} failed after {nb_attempts} attempts with return code {res.status_code} {res.reason}")
 	
-	def requestMap(self, url, mapper, cache=True) :
+	def requestMap(self, url, mapper, cache=True, delay=0) :
 		if cache :
 			res = _request_cache.get(url)
 			if res is not None :
 				return res
-		res = mapper(self._requestURL(url))
+		res = mapper(self._requestURL(url, delay))
 		if cache :
 			_request_cache.add(url, res)
 		return res
 
-	def requestBinary(self, url, cache=False) -> bytes :
-		return self.requestMap(url, lambda r : r.content, cache)
+	def requestBinary(self, url, cache=False, delay=0) -> bytes :
+		return self.requestMap(url, lambda r : r.content, cache, delay)
 	
-	def requestJson(self, url, cache=True) :
-		return self.requestMap(url, lambda r : r.json(), cache)
+	def requestJson(self, url, cache=True, delay=0) :
+		return self.requestMap(url, lambda r : r.json(), cache, delay)
 
 
 class RequesterNoCache(Requester) :

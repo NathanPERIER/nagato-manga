@@ -161,7 +161,7 @@ class MangadexDownloader(BaseDownloader) :
 		chapter = data['chapter']
 		hash = chapter['hash']
 		images = chapter['data']
-		return [self._requester.requestBinary(f"{base_url}/data/{hash}/{image}") for image in images]
+		return [self._requester.requestBinary(f"{base_url}/data/{hash}/{image}", delay=0.1) for image in images]
 
 
 	
