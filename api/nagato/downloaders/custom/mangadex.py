@@ -1,3 +1,4 @@
+from nagato.utils.compression import Archiver
 from nagato.downloaders import custom
 from nagato.downloaders.base import BaseDownloader
 from nagato.utils.errors import ApiUrlError, ApiNotFoundError
@@ -155,13 +156,14 @@ class MangadexDownloader(BaseDownloader) :
 		chapter['manga'] = self._findRelationshipId(data['relationships'], 'manga')[1]
 		return chapter
 	
-	def downloadChapter(self, chapter_id) :
+	def downloadChapter(self, chapter_id, archiver: Archiver) :
 		data = self._requester.requestJson(f"{API_ATHOME_URL}/{chapter_id}")
 		base_url = data['baseUrl']
 		chapter = data['chapter']
 		hash = chapter['hash']
 		images = chapter['data']
-		return [self._requester.requestBinary(f"{base_url}/data/{hash}/{image}", delay=0.1) for image in images]
+		for image in images :
+			archiver.addFile(self._requester.requestBinary(f"{base_url}/data/{hash}/{image}", delay=0.1))
 
 
 	

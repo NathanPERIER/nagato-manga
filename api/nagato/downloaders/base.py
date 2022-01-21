@@ -1,28 +1,17 @@
-from nagato.utils.compression import nameImage, makeCbz
-from nagato.utils.threads import DownloadThread
+from nagato.utils.compression import Archiver, getArchiverForMethod
+from nagato.utils.threads import ChapterDownload
 
 import os
 import logging
 
 logger = logging.getLogger(__name__)
 
-_dl_methods = {}
-
-def dl_method(method) :
-	def annotation(f) :
-		_dl_methods[method] = f
-		return f
-	return annotation
-
 
 class BaseDownloader :
 
 	def __init__(self, config) :
-		dl_method = config['chapters.method']
-		if dl_method not in _dl_methods :
-			raise ValueError(f"Unrecognized download method {dl_method}")
-		self._saveChapter = _dl_methods[dl_method]
-		self._destination = config['chapters.destination'] # TODO test and create folder
+		self._archiver_class = getArchiverForMethod(config['chapters.method'])
+		self._destination = config['chapters.destination']
 		if not os.path.exists(self._destination) :
 			logger.info(f"Recursively creating directory \"{self._destination}\"")
 			os.makedirs(self._destination)
@@ -52,17 +41,18 @@ class BaseDownloader :
 	 
 	def downloadChapters(self, ids) :
 		for chapter_id in ids :
-			DownloadThread(self, chapter_id).start()
+			ChapterDownload(self, chapter_id).submit()
 	
-	def downloadChapter(self, chapter_id) :
+	def downloadChapter(self, chapter_id, archiver: Archiver) :
 		raise NotImplementedError
 
 	def getChapterInfo(self, chapter_id) :
 		raise NotImplementedError
 
-	def getChapteFormattingData(self, chapter_id) :
-		chapter_info = self.getChapterInfo(chapter_id)
-		manga_info = self.getMangaInfo(chapter_info['manga'])
+	def getArchiver(self, chapter_id) -> Archiver :
+		return self._archiver_class(self, chapter_id)
+
+	def getChapterFormattingData(self, chapter_info, manga_info) :
 		return {
 			'id': chapter_info['id'],
 			'title': chapter_info['title'],
@@ -73,34 +63,6 @@ class BaseDownloader :
 			'lang': chapter_info['lang'],
 			'team': chapter_info['team']['name'] if chapter_info['team'] is not None else None
 		}
-
-	def saveChapter(self, images, format_info) :
-		self._saveChapter(self, images, format_info)
-
-	@dl_method('zip')
-	def saveToZip(self, images, format_info) :
-		folder = self.getDestinationFolder(format_info)
-		filename = self.getFilename(format_info)
-		with open(os.path.join(folder, f"{filename}.zip"), 'wb') as f :
-			f.write(makeCbz(images))
-	
-	@dl_method('cbz')
-	def saveToCbz(self, images, format_info) :
-		folder = self.getDestinationFolder(format_info)
-		filename = self.getFilename(format_info)
-		with open(os.path.join(folder, f"{filename}.cbz"), 'wb') as f :
-			f.write(makeCbz(images))
-
-	@dl_method('files')
-	def saveAsFiles(self, images, format_info) :
-		folder = os.path.join(self.getDestinationFolder(format_info), self.getFilename(format_info))
-		if not os.path.exists(folder) :
-			os.mkdir(folder)
-		maxlen = len(str(len(images)))
-		for i, image in enumerate(images) :
-			filename = nameImage(image, i+1, maxlen)
-			with open(os.path.join(folder, filename), 'wb') as f :
-				f.write(image)
 
 	def getFilename(self, format_info) : # TODO format with a format string
 		return format_info['title']
