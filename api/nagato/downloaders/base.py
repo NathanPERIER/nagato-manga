@@ -40,8 +40,7 @@ class BaseDownloader :
 		raise NotImplementedError
 	 
 	def downloadChapters(self, ids) :
-		for chapter_id in ids :
-			ChapterDownload(self, chapter_id).submit()
+		return [ChapterDownload(self, chapter_id).submit() for chapter_id in ids]
 	
 	def downloadChapter(self, chapter_id, archiver: Archiver) :
 		raise NotImplementedError

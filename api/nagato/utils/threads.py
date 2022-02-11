@@ -47,6 +47,7 @@ class ChapterDownload :
 	def submit(self) :
 		self._status = DownloadState.QUEUED
 		self._future = _executor.submit(self.perform)
+		return self._id
 
 	def perform(self) :
 		try :
@@ -57,6 +58,7 @@ class ChapterDownload :
 			self._status = DownloadState.COMPLETE
 		except Exception :
 			print(traceback.format_exc())
+			self._status = DownloadState.FAILED
 	
 	def getArchiver(self) -> Archiver :
 		return self._archiver

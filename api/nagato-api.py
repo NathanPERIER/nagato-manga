@@ -107,8 +107,8 @@ def getMangaChapters(dl: BaseDownloader, manga_id) :
 @errors.wrap
 @http.chapterFromArgs
 def postChapterDownloadParam(dl: BaseDownloader, chapter_id) :
-	dl.downloadChapters([chapter_id])
-	return Response(status=200)
+	res = dl.downloadChapters([chapter_id])[0]
+	return Response(json.dumps(res), 200, content_type='application/json')
 
 @app.route('/api/download/chapters', methods=['POST'])
 @errors.wrap

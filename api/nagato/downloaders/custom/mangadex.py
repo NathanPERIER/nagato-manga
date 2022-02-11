@@ -165,7 +165,3 @@ class MangadexDownloader(BaseDownloader) :
 		for image in images :
 			archiver.addFile(self._requester.requestBinary(f"{base_url}/data/{hash}/{image}", delay=0.1))
 
-
-	
-
-
