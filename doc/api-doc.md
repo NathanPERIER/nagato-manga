@@ -312,12 +312,12 @@ Content-Type: application/json
 
 Retrieves some general information on a chapter. The result is a JSON object with the following attributes :
  - `id`: the identifier of this chapter
- - `manga`: the identifier of the manga\*
+ - `manga`: the identifier of the manga
  - `volume`: the number of the volume in which this chapter was published\*
  - `chapter`: the number of this chapter
  - `title`: the title of this chapter\*
- - `lang`: the language in which this chapter is published (`"en"`, `"jp"`, `"fr"`, ...)\*
- - `pages`: the number of pages in this chapter\*
+ - `lang`: the language in which this chapter is published (`"en"`, `"jp"`, `"fr"`, ...)
+ - `pages`: the number of pages in this chapter
  - `team`: an object containing data on the translation/scanlation team\*
      - `id`: the identifier of the team on the website
 	 - `name`: the name of the team
@@ -411,8 +411,8 @@ Retrieves the list of chapters for a manga. The result is a JSON object where th
  - `volume`: the number of the volume in which this chapter was published\*
  - `chapter`: the number of this chapter
  - `title`: the title of this chapter\*
- - `lang`: the language in which this chapter is published (`"en"`, `"jp"`, `"fr"`, ...)\*
- - `pages`: the number of pages in this chapter\*
+ - `lang`: the language in which this chapter is published (`"en"`, `"jp"`, `"fr"`, ...)
+ - `pages`: the number of pages in this chapter
  - `team`: an object containing data on the translation/scanlation team\*
      - `id`: the identifier of the team on the website
 	 - `name`: the name of the team
@@ -461,6 +461,31 @@ Content-Type: application/json
 
 
 ## `POST /api/download/chapter`
+
+Starts the download of a chapter to the server and returns an identifier that will allow to track the progress of the download.
+
+### Request parameters
+
+- `url`: The URL of a page on the website
+- `site`: The site for this resource
+- `id`: the identifier of this resource on the site
+
+**Note** : It is mandatory to set a value for either `url` or `site` and `id` for this request to succeed.
+
+### Example request
+
+```Bash
+curl -X POST 'localhost:8090/api/download/chapter?url=https://mangadex.org/chapter/ec562f76-4654-4621-8198-247622955fdd/1'
+```
+
+### Example response
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+"yfu7Rf1Xe3UHjwDoA5fp7DxA0jYstHWn"
+```
 
 [`^ Back to top ^`][top]
 
