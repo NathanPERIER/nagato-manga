@@ -59,7 +59,7 @@ class Requester :
 				return res
 			logger.warning(f"Request n°{nb_attempts} to {url} failed with return code {res.status_code} {res.reason} : {res.text}")
 			if res.status_code in self._handlers :
-				keep_going = self._handlers[res.status_code]()
+				keep_going = self._handlers[res.status_code](res, nb_attempts)
 			elif res.status_code == 404 :
 				raise ApiNotFoundError(f"Could not find resource at {url}")
 			else :
