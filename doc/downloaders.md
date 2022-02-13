@@ -194,6 +194,10 @@ Used when some data given to the API is poorly formatted. Yields a `400` error c
 
 Extends `ApiFormatError`, used for badly formatted URLs.
 
+### `ApiConfigurationError`
+
+Should only be used during the initialisation of the API, indicates that some configuration entry had an unexpected value.
+
 
 [HTTP error codes]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status 
 [`requests` module documentation]: https://docs.python-requests.org/en/latest/

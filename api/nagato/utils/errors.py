@@ -26,6 +26,11 @@ class ApiUrlError(ApiFormatError) :
 		super().__init__(message)
 
 
+class ApiConfigurationError(ApiError) :
+	def __init__(self, message) :
+		super().__init__(message)
+
+
 def wrap(route) :
 	@wraps(route)
 	def wrapper() :
