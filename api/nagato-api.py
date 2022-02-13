@@ -13,7 +13,7 @@ import json
 import base64
 from flask import Flask, Response, request
 
-app = Flask(__name__)
+app = Flask('nagato-api')
 
 
 @app.route('/api/ping', methods=['GET'])
