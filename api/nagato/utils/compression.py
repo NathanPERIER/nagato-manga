@@ -1,3 +1,5 @@
+from nagato.utils.sanitise import sanitiseNodeName
+
 import io
 import os
 import traceback
@@ -108,7 +110,7 @@ class Archiver :
 		self._format = downloader.getChapterFormattingData(self._chapter, self._manga)
 		self._npages = self._chapter['pages']
 		self._destination = downloader.getDestinationFolder(self._format)
-		self._filename = downloader.getFilename(self._format)
+		self._filename = sanitiseNodeName(downloader.getFilename(self._format))
 		self._cpt = 1
 		self._maxlen = len(str(self._npages))
 

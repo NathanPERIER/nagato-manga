@@ -1,3 +1,4 @@
+from nagato.utils.sanitise import sanitiseNodeName
 from nagato.utils.compression import Archiver, getArchiverForMethod
 from nagato.utils.threads import ChapterDownload
 
@@ -70,7 +71,7 @@ class BaseDownloader :
 		raise NotImplementedError
 	
 	def destFolderSeparated(self, format_info) :
-		path = os.path.join(self._destination, format_info['manga'])
+		path = os.path.join(self._destination, sanitiseNodeName(format_info['manga']))
 		if not os.path.exists(path) :
 			os.mkdir(path)
 		return path
