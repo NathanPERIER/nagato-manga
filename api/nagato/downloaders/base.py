@@ -1,3 +1,5 @@
+from string import Template
+from nagato.utils.errors import ApiConfigurationError
 from nagato.utils.sanitise import sanitiseNodeName
 from nagato.utils.compression import Archiver, getArchiverForMethod
 from nagato.utils.threads import ChapterDownload
@@ -18,7 +20,14 @@ class BaseDownloader :
 			os.makedirs(self._destination)
 		if not os.path.isdir(self._destination) :
 			raise NotADirectoryError(f"\"{self._destination}\" is a file")
-		self._format = config['chapters.format']
+		self._format = Template(config['chapters.format'])
+		try :
+			fake_info = {k: k for k in ['id', 'title', 'manga_id', 'manga', 'volume', 'chapter', 'lang', 'team']}
+			self._format.substitute(fake_info)
+		except ValueError :
+			raise ApiConfigurationError(f"Invalid template \"{config['chapters.format']}\" in class {type(self).__name__}")
+		except KeyError as e :
+			raise ApiConfigurationError(f"Template \"{config['chapters.format']}\" in class {type(self).__name__} contains the invalid placeholder \"{e}\"")
 		if config['chapters.separate'] :
 			self.getDestinationFolder = self.destFolderSeparated
 		else :
@@ -65,7 +74,7 @@ class BaseDownloader :
 		}
 
 	def getFilename(self, format_info) : # TODO format with a format string
-		return format_info['title']
+		return self._format.substitute(format_info)
 
 	def getDestinationFolder(self, format_info) :
 		raise NotImplementedError

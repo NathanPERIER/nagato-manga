@@ -2,7 +2,7 @@
 	"global": {
 		"chapters.destination": "output",
 		"chapters.method": "zip",
-		"chapters.format": "$(id)s",
+		"chapters.format": "[$id] C${chapter} $title",
 		"chapters.separate": true
 	},
 	"api": {
