@@ -1,0 +1,12 @@
+version: "3.9"
+services:
+  api:
+    image: nagato-api
+    container_name: nagato-api
+    volumes:
+      - /path/to/downloads:/data
+      - /path/to/config:/opt/nagato-api/config
+    ports:
+      - 8000:8090
+    environment:
+      - "NAGATO_API_PORT=8090"

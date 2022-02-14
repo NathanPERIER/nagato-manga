@@ -16,7 +16,7 @@ You can also set the `NAGATO_API_HOST` and `NAGATO_API_PORT` indicating the host
 ### General configuration
 
 The `api` section contains the following attributes that are relevant to the general behaviour of the API :
- - `request.cache.maxlen`: the maximum HTTP requests that can be cached, this can be set to 0 to disable HTTP caching entirely but it is discouraged since certain requests may be repeated quite often.
+ - `request.cache.maxlen`: the maximum HTTP requests that can be cached, this can be set to 0 to disable HTTP caching entirely but it is discouraged since certain requests may be repeated quite often. The `NAGATO_CACHE_SIZE` environment variable can also be used.
  - `compression.cbz.additional_data`: a boolean indicating wether or not the API should spend more time (and resources) to infer metadata from the available data on a chapter and a manga for a cbz file. This implies for example loading each image with [`PIL`](https://pillow.readthedocs.io/en/stable/) to check if it is a double page (not implemented yet).
 
 ### Configuration of a downloader
