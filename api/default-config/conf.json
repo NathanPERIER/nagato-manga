@@ -1,8 +1,8 @@
 {
 	"global": {
 		"chapters.destination": "/data",
-		"chapters.method": "cbz",
 		"chapters.format": "${manga} -.- C${chapter} ${title}",
+		"chapters.method": "cbz",
 		"chapters.separate": true
 	},
 	"api": {
