@@ -11,15 +11,12 @@ Additionaly, there is a [secondary configuration file](../api/config/env.json) t
 
 For a property, the utility in charge of the configuration of the API will first get all the properties from the main configuration file. Those values can be considered as default values in case there is no environment variable for the property or the environment variable is not set. Then, it checks the second configuration file to see if some values can be taken from the environment, if so they override the values from the first configuration file. This value's type will be inferred from the default configuration : if the default value is a string then it will be considered as a string, else it will be considered as JSON data and parsed accordingly.
 
-By default, the API expects these configuration files to be in `./config` (if `nagato-api.py` is in the directory `.`). This can be changed by setting the `NAGATO_CONF_DIR` environment variable to some other path.
-
-In the Docker container, you can also set the `NAGATO_API_HOST` and `NAGATO_API_PORT` indicating the host and port used by the API, defaulting respectively to `0.0.0.0` and `8090`. 
+You can also set the `NAGATO_API_HOST` and `NAGATO_API_PORT` indicating the host and port used by the API, defaulting respectively to `0.0.0.0` and `8090`. 
 
 ### General configuration
 
 The `api` section contains the following attributes that are relevant to the general behaviour of the API :
  - `request.cache.maxlen`: the maximum HTTP requests that can be cached, this can be set to 0 to disable HTTP caching entirely but it is discouraged since certain requests may be repeated quite often.
- - `user.auth`: a boolean indicating wether or not the user is required to be authentified to use the endpoints of the API (not implemented yet).
  - `compression.cbz.additional_data`: a boolean indicating wether or not the API should spend more time (and resources) to infer metadata from the available data on a chapter and a manga for a cbz file. This implies for example loading each image with [`PIL`](https://pillow.readthedocs.io/en/stable/) to check if it is a double page (not implemented yet).
 
 ### Configuration of a downloader
