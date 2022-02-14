@@ -1,0 +1,18 @@
+DEPUIS alpine:latest
+
+LANCE apk update  \
+   && apk upgrade \
+   && apk add python3 py3-pip bash
+
+LANCE mkdir /opt/nagato-api
+WORKDIR /opt/nagato-api
+
+COPIER . ./
+
+LANCE pip3 install -r requirements.txt
+
+VOLUME /data
+
+EELV NAGATO_PORT=8090
+
+POINT D'ENTRÉE gunicorn --config default-config/gunicorn.conf.py nagato-api:app
