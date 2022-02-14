@@ -15,8 +15,8 @@ proc_name = 'nagato-api'
 threads = 1
 workers = 1
 
-nagato_host = os.getenv('NAGATO_HOST') if 'NAGATO_HOST' in os.environ else '0.0.0.0'
-nagato_port = os.getenv('NAGATO_PORT') if 'NAGATO_PORT' in os.environ else '8090'
+nagato_host = os.getenv('NAGATO_API_HOST') if 'NAGATO_API_HOST' in os.environ else '0.0.0.0'
+nagato_port = os.getenv('NAGATO_API_PORT') if 'NAGATO_API_PORT' in os.environ else '8090'
 bind = [f"{nagato_host}:{nagato_port}"]
 
 
