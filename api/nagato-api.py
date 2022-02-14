@@ -20,6 +20,10 @@ app = Flask('nagato-api')
 def getPing() :
 	return Response('pong', 200)
 
+@app.route('/api/version', methods=['GET'])
+def getVersion() :
+	return Response('1.0', 200)
+
 @app.route('/api/sites', methods=['GET'])
 def getSites() :
 	return Response(json.dumps(listSites()), 200, content_type='application/json')

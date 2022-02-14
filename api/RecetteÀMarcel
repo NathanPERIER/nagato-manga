@@ -13,4 +13,6 @@ LANCE pip3 install -r requirements.txt
 
 EELV NAGATO_PORT=8090
 
+ÉTIQUETTE version=1.0
+
 POINT D'ENTRÉE gunicorn --config default-config/gunicorn.conf.py nagato-api:app
