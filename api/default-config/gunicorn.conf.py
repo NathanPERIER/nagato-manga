@@ -1,6 +1,7 @@
 
 import os
 import json
+import logging
 
 # More information on this configuration file here : https://docs.gunicorn.org/en/stable/settings.html#settings
 
@@ -18,6 +19,8 @@ nagato_host = os.getenv('NAGATO_HOST') if 'NAGATO_HOST' in os.environ else '0.0.
 nagato_port = os.getenv('NAGATO_PORT') if 'NAGATO_PORT' in os.environ else '8090'
 bind = [f"{nagato_host}:{nagato_port}"]
 
+
+_logger = logging.getLogger(__name__)
 
 def _deepMerge(d1: dict, d2: dict) :
 	for k, v in d2.items() :
@@ -37,6 +40,7 @@ def _completeConf(default_path, true_path) :
 		_deepMerge(default_conf, user_conf)
 		do_save = default_conf != user_conf
 	if do_save :
+		_logger.info('Edited configuration file %s', true_path)
 		with open(true_path, 'w') as f :
 			return json.dump(default_conf, f, indent='\t')
 
@@ -45,6 +49,7 @@ def on_starting(_server):
 	this_dir = os.path.realpath(os.path.dirname(__file__))
 	conf_dir = os.path.join(os.path.dirname(this_dir), 'config')
 	if not os.path.exists(conf_dir) :
+		_logger.info('Creating folder %s', conf_dir)
 		os.mkdir(conf_dir)
 	for filename in ['conf.json', 'env.json'] :
 		_completeConf(os.path.join(this_dir, filename), os.path.join(conf_dir, filename))
