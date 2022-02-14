@@ -16,18 +16,18 @@ $ docker build .
 
 ### Set up the container
 
-In the following code, replace `nagato-api` by the ID provided by Docker at the end of the `docker build`. You can see the list of you images with `docker images`.
+In the following code, replace `nagato-api` (name of the image) by the ID provided by Docker at the end of the `docker build`. You can see the list of your images with `docker images`.
 
 You can deploy the container with the following command that will expose the API on port `8000` :
 
 ```Bash
 docker run -d \
     --name nagato-api \
-	-p 8000:8090 \
-	-v /path/to/downloads:/data \
-	-v /path/to/config:/opt/nagato-api/config \
-	-e NAGATO_API_PORT=8090
-	nagato-api
+    -p 8000:8090 \
+    -v /path/to/downloads:/data \
+    -v /path/to/config:/opt/nagato-api/config \
+    -e NAGATO_API_PORT=8090 \
+    nagato-api
 ```
 
 By default there is only one destination folder for all downloads, which is `/data`. This can change however if you edit the configuration file, as you can define a specific destination folder for any downloader. When you tweak such parameters, make sure to edit the binds and mounts accordingly.
