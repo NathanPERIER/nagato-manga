@@ -493,6 +493,38 @@ Content-Type: application/json
 
 ## `POST /api/download/chapters`
 
+Starts the downloads for several chapters and returns a list of download identifiers.
+
+### Request content
+
+The body of the request must be a json object that can have two fields :
+ - `urls`: a list of URLs of chapters to download, potentially on several sites.
+ - `sites`: an object where the keys are site names and the values are lists of chapter identifiers
+
+*Note : if one field is associated to an empty list/object, you don't need to specify it*
+
+### Example request
+
+```Bash
+curl --header "Content-Type: application/json" -d '{"urls": ["https://mangadex.org/chapter/ec562f76-4654-4621-8198-247622955fdd/1"], "sites": {"mangadex.org": ["75011fda-0eec-4617-a677-e4eb8bb8f55b", "8a82dbff-60a2-4131-83c7-b42df0f7864d"]}}' -X POST 'localhost:8090/api/download/chapters'
+```
+
+### Example response
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+["yfu7Rf1Xe3UHjwDoA5fp7DxA0jYstHWn", "PGUiBStCng-vty0nSduNHegMunyIMWnN", "h2h2UQA_O05AMkkbZJs7mouXd3G5gQ1S"]
+```
+
+If the content type is not `application/json` or the json is invalid :
+```
+HTTP/1.1 400 BAD REQUEST
+
+Content of request is not well-formed JSON
+```
+
 [`^ Back to top ^`][top]
 
 
