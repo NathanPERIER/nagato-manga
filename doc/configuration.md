@@ -22,10 +22,10 @@ The `api` section contains the following attributes that are relevant to the gen
 ### Configuration of a downloader
 
 The `global` section contains attributes that are common to all downloaders : 
- - `chapters.destination`: the base directory where chapters will be saved
- - `chapters.separate`: boolean indicating if the chapters of a same manga should be grouped in a subfolder (`true`) or if all chapters should be stored in the same folder (`false`)
- - `chapters.method`: the method used to save chapters once they are downloaded, should be one of `file`, `zip` or `cbz` (see below for more details).
- - `chapters.format`: A template for a Python [Template String] that will define the name of the chapter when it is saved to the disk (the name of the cbz/zip file or the name of the folder, depending on the selected storing method). The placeholders that can be used are listed below.
+ - `chapters.destination`: the base directory where chapters will be saved. The `NAGATO_DOWNLOAD_DIR` environment variable can also be used.
+ - `chapters.separate`: boolean indicating if the chapters of a same manga should be grouped in a subfolder (`true`) or if all chapters should be stored in the same folder (`false`).
+ - `chapters.method`: the method used to save chapters once they are downloaded, should be one of `file`, `zip` or `cbz` (see below for more details). The `NAGATO_CACHE_SIZE` environment variable can also be used.
+ - `chapters.format`: A template for a Python [Template String] that will define the name of the chapter when it is saved to the disk (the name of the cbz/zip file or the name of the folder, depending on the selected storing method). The placeholders that can be used are listed below. The `NAGATO_DOWNLOAD_FORMAT` environment variable can also be used.
 
 A sub-section in the `downloaders` section can contain any of the attributes listed above, these values will override those in `global`. A custom attribute specific to a downloader can be defined in the corresponding sub-section, its value will then be accessible in the constructor of said downloader via the `config` argument. One can also bound an environment variable to the value of a custom attribute by adding an entry in the `env.conf` file.
 
