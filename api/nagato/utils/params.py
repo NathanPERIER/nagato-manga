@@ -1,4 +1,5 @@
 from nagato.downloaders import downloaderForSite, downloaderForURL, siteForURL
+from nagato.downloaders.base import BaseDownloader
 from nagato.utils.compression import binary_patterns
 from nagato.utils.errors import ApiFormatError
 
@@ -71,7 +72,8 @@ def getChapterRefs(data) :
 					'downloader': downloaderForSite(site),
 					'chapters': set()
 				}
-			res[site]['chapters'].add(site)
+			dl: BaseDownloader = res[site]['downloader']
+			res[site]['chapters'].add(dl.getChapterId(url))
 	return res
 
 def chaptersFromContent(f) :
