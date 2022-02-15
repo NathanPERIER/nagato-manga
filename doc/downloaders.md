@@ -37,6 +37,7 @@ class MyDownloader(BaseDownloader) :
 			'description': None,
 			'authors': [],
 			'artists': [],
+			'genres': [],
 			'tags': [],
 			'lang': 'en',
 			'date': {

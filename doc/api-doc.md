@@ -244,6 +244,7 @@ Retrieves some general information on a manga. The result is a JSON object with 
  - `description`: the description of the manga\*
  - `authors`: a list of objects representing an author with two attributes : `id` and `name`
  - `artists`: a list of objects representing an artist with two attributes : `id` and `name`
+ - `genres`: a list of genres
  - `tags`: a list of tags
  - `date`: an object representing the date of publication of the first chapter
      - `day`: the day between 1 and 31\*

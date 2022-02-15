@@ -77,7 +77,10 @@ class MangadexDownloader(BaseDownloader) :
 					in self._findRelationships(data['relationships'], 'author').items()]
 		artists = [{'id': artist_id, 'name': attributes['name']} for artist_id, attributes 
 					in self._findRelationships(data['relationships'], 'artist').items()]
-		tags = [t['attributes']['name']['en'] for t in attributes['tags']]
+		genres = []
+		tags = []
+		for t in attributes['tags'] :
+			(genres if t['attributes']['group'] == 'genre' else tags).append(t['attributes']['name']['en'])
 		return {
 			'id': manga_id,
 			'title': title,
@@ -85,6 +88,7 @@ class MangadexDownloader(BaseDownloader) :
 			'description': desc,
 			'authors': authors,
 			'artists': artists,
+			'genres': genres,
 			'tags': tags,
 			'lang': attributes['originalLanguage'],
 			'links': attributes['links'],
