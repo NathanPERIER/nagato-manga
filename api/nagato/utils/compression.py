@@ -111,7 +111,7 @@ class Archiver :
 		self._npages = self._chapter['pages']
 		self._destination = downloader.getDestinationFolder(self._format)
 		self._filename = sanitiseNodeName(downloader.getFilename(self._format))
-		self._cpt = 1
+		self._cpt = 0
 		self._maxlen = len(str(self._npages))
 
 	def getFilename(self) :
@@ -121,6 +121,14 @@ class Archiver :
 			str: the name of the file or folder
 		'''		
 		return self._filename
+	
+	def getProgress(self) -> float :
+		'''getProgress Retrieves the proportion of files that have been downloaded so far
+
+		Returns:
+			float: The proprtion of downloaded files (between 0 and 1 included)
+		'''
+		return self._cpt / self._maxlen
 	
 	def __enter__(self) :
 		'''__enter__ Method called at the beginning of a `with ... as ...` block
@@ -140,9 +148,9 @@ class Archiver :
 
 		Args:
 			file (bytes): The page as binary data
-		'''		
-		filename = nameImage(file, self._cpt, self._maxlen)
+		'''	
 		self._cpt += 1
+		filename = nameImage(file, self._cpt, self._maxlen)
 		self.processFile(file, filename)
 	
 	def processFile(self, file: bytes, name: str) :
