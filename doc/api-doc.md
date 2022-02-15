@@ -527,6 +527,15 @@ Content of request is not well-formed JSON
 
 [`^ Back to top ^`][top]
 
+## `GET /api/download/<id>`
+
+## `GET /api/downloads/agregate`
+
+## `POST /api/download/cancel/<id>`
+
+## `POST /api/downloads/cancel`
+
+## `DELETE /api/downloads/history`
 
 
 [top]: #nagato-api
