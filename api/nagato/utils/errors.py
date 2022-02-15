@@ -1,4 +1,4 @@
-from flask import Response
+from flask import Flask, Response
 from functools import wraps
 
 
@@ -31,16 +31,15 @@ class ApiConfigurationError(ApiError) :
 		super().__init__(message)
 
 
-def wrap(route) :
-	@wraps(route)
-	def wrapper() :
-		try :
-			response = route()
-		except ApiNotFoundError as e :
-			return Response(str(e), 404)
-		except ApiFormatError as e :
-			return Response(str(e), 400)
-		except ApiError as e :
-			return Response(str(e), 500)
-		return response
-	return wrapper
+def setHandlers(app: Flask) :
+	@app.errorhandler(ApiNotFoundError)
+	def handle_not_found(e) :
+		return str(e), 404
+	
+	@app.errorhandler(ApiFormatError)
+	def handle_bad_format(e) :
+		return str(e), 400
+	
+	@app.errorhandler(ApiError)
+	def handle_generic(e) :
+		return str(e), 500

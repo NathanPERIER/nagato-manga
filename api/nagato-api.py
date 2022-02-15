@@ -1,19 +1,21 @@
 #!/usr/bin/python3
 
 import logging
+from re import A
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s", datefmt='%d/%m/%Y %H:%M:%S')
 
 from nagato.downloaders.base import BaseDownloader
 from nagato.downloaders import downloaderForSite, listSites, siteForURL, downloaderForURL
-from nagato.utils import errors
-from nagato.utils import http
+from nagato.utils import http, errors
 
 import json
 import base64
 from flask import Flask, Response, request
 
 app = Flask('nagato-api')
+
+errors.setHandlers(app)
 
 
 @app.route('/api/ping', methods=['GET'])
@@ -30,7 +32,6 @@ def getSites() :
 
 
 @app.route('/api/manga/id', methods=['GET'])
-@errors.wrap
 def getMangaId() :
 	if 'url' not in request.args :
 		return Response('Request is missing the URL parameter', 400)
@@ -43,7 +44,6 @@ def getMangaId() :
 	return Response(json.dumps(res), 200, content_type='application/json')
 
 @app.route('/api/chapter/id', methods=['GET'])
-@errors.wrap
 def getChapterId() :
 	if 'url' not in request.args :
 		return Response('Request is missing the URL parameter', 400)
@@ -72,7 +72,6 @@ def getResourceSite() :
 
 
 @app.route('/api/manga/info', methods=['GET'])
-@errors.wrap
 @http.mangaFromArgs
 def getMangaInfo(dl: BaseDownloader, manga_id) :
 	res = dl.getMangaInfo(manga_id)
@@ -80,7 +79,6 @@ def getMangaInfo(dl: BaseDownloader, manga_id) :
 
 
 @app.route('/api/chapter/info', methods=['GET'])
-@errors.wrap
 @http.chapterFromArgs
 def getChapterInfo(dl: BaseDownloader, chapter_id) :
 	res = dl.getChapterInfo(chapter_id)
@@ -88,7 +86,6 @@ def getChapterInfo(dl: BaseDownloader, chapter_id) :
 
 
 @app.route('/api/manga/cover', methods=['GET'])
-@errors.wrap
 @http.mangaFromArgs
 def getMangaCover(dl: BaseDownloader, manga_id) :
 	res = dl.getCover(manga_id)
@@ -100,7 +97,6 @@ def getMangaCover(dl: BaseDownloader, manga_id) :
 
 
 @app.route('/api/manga/chapters', methods=['GET'])
-@errors.wrap
 @http.mangaFromArgs
 def getMangaChapters(dl: BaseDownloader, manga_id) :
 	res = dl.getChapters(manga_id)
@@ -108,14 +104,12 @@ def getMangaChapters(dl: BaseDownloader, manga_id) :
 
 
 @app.route('/api/download/chapter', methods=['POST'])
-@errors.wrap
 @http.chapterFromArgs
 def postChapterDownloadParam(dl: BaseDownloader, chapter_id) :
 	res = dl.downloadChapters([chapter_id])[0]
 	return Response(json.dumps(res), 200, content_type='application/json')
 
 @app.route('/api/download/chapters', methods=['POST'])
-@errors.wrap
 def postChaptersDownloadBody() :
 	data = request.get_json()
 	for site, chaper_ids in data.items() :
