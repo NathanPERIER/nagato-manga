@@ -1,6 +1,6 @@
-from api.nagato.utils.errors import ApiFormatError
 from nagato.downloaders import downloaderForSite, downloaderForURL, siteForURL
 from nagato.utils.compression import binary_patterns
+from nagato.utils.errors import ApiFormatError
 
 import logging
 from functools import wraps
