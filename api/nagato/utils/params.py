@@ -1,4 +1,5 @@
-from nagato.downloaders import downloaderForSite, downloaderForURL
+from api.nagato.utils.errors import ApiFormatError
+from nagato.downloaders import downloaderForSite, downloaderForURL, siteForURL
 from nagato.utils.compression import binary_patterns
 
 import logging
@@ -52,4 +53,32 @@ def chapterFromArgs(f) :
 			chapter_id = request.args['id']
 			return f(dl, chapter_id)
 		return Response('Request is missing the URL parameter or the Site and ID parameters', 400)
+	return wrapper
+
+def getChapterRefs(data) :
+	res = {
+		site: {
+			'downloader': downloaderForSite(site), 
+			'chapters': set(chapters)
+		}
+		for site, chapters in data['sites'].items()
+	} if 'sites' in data else {}
+	if 'urls' in data :
+		for url in data['urls'] :
+			site = siteForURL(url)
+			if site not in res :
+				res[site] = {
+					'downloader': downloaderForSite(site),
+					'chapters': set()
+				}
+			res[site]['chapters'].add(site)
+	return res
+
+def chaptersFromContent(f) :
+	@wraps(f)
+	def wrapper() :
+		data = request.get_json(silent=True)
+		if data is None :
+			raise ApiFormatError('Content of request is not well-formed JSON')
+		return f(getChapterRefs(data))
 	return wrapper

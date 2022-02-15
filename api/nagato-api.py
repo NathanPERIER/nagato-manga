@@ -1,13 +1,12 @@
 #!/usr/bin/python3
 
 import logging
-from re import A
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s", datefmt='%d/%m/%Y %H:%M:%S')
 
 from nagato.downloaders.base import BaseDownloader
 from nagato.downloaders import downloaderForSite, listSites, siteForURL, downloaderForURL
-from nagato.utils import http, errors
+from nagato.utils import errors, params
 
 import json
 import base64
@@ -72,24 +71,24 @@ def getResourceSite() :
 
 
 @app.route('/api/manga/info', methods=['GET'])
-@http.mangaFromArgs
+@params.mangaFromArgs
 def getMangaInfo(dl: BaseDownloader, manga_id) :
 	res = dl.getMangaInfo(manga_id)
 	return Response(json.dumps(res), 200, content_type='application/json')
 
 
 @app.route('/api/chapter/info', methods=['GET'])
-@http.chapterFromArgs
+@params.chapterFromArgs
 def getChapterInfo(dl: BaseDownloader, chapter_id) :
 	res = dl.getChapterInfo(chapter_id)
 	return Response(json.dumps(res), 200, content_type='application/json')
 
 
 @app.route('/api/manga/cover', methods=['GET'])
-@http.mangaFromArgs
+@params.mangaFromArgs
 def getMangaCover(dl: BaseDownloader, manga_id) :
 	res = dl.getCover(manga_id)
-	mime_type = http.imageMimeType(res)
+	mime_type = params.imageMimeType(res)
 	if 'base64' in request.args and request.args.get('base64') == 'true' :
 		b64 = base64.b64encode(res)
 		return Response(b64, 200, content_type='text/plain', headers={'Original-Content-Type': mime_type})
@@ -97,23 +96,24 @@ def getMangaCover(dl: BaseDownloader, manga_id) :
 
 
 @app.route('/api/manga/chapters', methods=['GET'])
-@http.mangaFromArgs
+@params.mangaFromArgs
 def getMangaChapters(dl: BaseDownloader, manga_id) :
 	res = dl.getChapters(manga_id)
 	return Response(json.dumps(res), 200, content_type='application/json')
 
 
 @app.route('/api/download/chapter', methods=['POST'])
-@http.chapterFromArgs
+@params.chapterFromArgs
 def postChapterDownloadParam(dl: BaseDownloader, chapter_id) :
 	res = dl.downloadChapters([chapter_id])[0]
 	return Response(json.dumps(res), 200, content_type='application/json')
 
 @app.route('/api/download/chapters', methods=['POST'])
-def postChaptersDownloadBody() :
-	data = request.get_json()
-	for site, chaper_ids in data.items() :
-		dl = downloaderForSite(site)
-		dl.downloadChapters(chaper_ids)
-	return Response(status=200)
+@params.chaptersFromContent
+def postChaptersDownloadBody(data: dict) :
+	res = []
+	for site_data in data.values() :
+		dl: BaseDownloader = site_data['downloader']
+		res.extend(dl.downloadChapters(site_data['chapters']))
+	return Response(json.dumps(res), 200, content_type='application/json')
 
