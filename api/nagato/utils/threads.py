@@ -37,6 +37,9 @@ def _generateId(t, filename) :
 			return h
 	raise RuntimeError("Could not attribute and ID to a download thread")
 
+def _timestamp() :
+	return int(time.time() * 1000)
+
 
 class ChapterDownload :
 
@@ -44,7 +47,7 @@ class ChapterDownload :
 		self._downloader = downloader
 		self._chapter = chapter_id
 		self._archiver : Archiver = downloader.getArchiver(chapter_id)
-		self._creation = time.time()
+		self._creation = _timestamp()
 		self._id = _generateId(self._creation, self._archiver.getFilename())
 		self._status = DownloadState.CREATED
 		self._future = None
@@ -53,7 +56,7 @@ class ChapterDownload :
 		_active_downloads[self._id] = self
 	
 	def submit(self) :
-		self._creation = time.time() # Update the creation date to be the time of submission (just in case)
+		self._creation = _timestamp() # Update the creation date to be the time of submission (just in case)
 		self._status = DownloadState.QUEUED
 		self._future = _executor.submit(self.perform)
 		self._future.add_done_callback(self.after)
@@ -62,7 +65,7 @@ class ChapterDownload :
 
 	def perform(self) :
 		try :
-			self._begin = time.time()
+			self._begin = _timestamp()
 			self._status = DownloadState.PROCESSING
 			with self.getArchiver() as archiver :
 				self._downloader.downloadChapter(self._chapter, archiver)
@@ -74,7 +77,7 @@ class ChapterDownload :
 	
 	def after(self, _=None) :
 		logger.info('Download %s exited with status %s', self._id, str(self._status))
-		self._end = time.time()
+		self._end = _timestamp()
 		del _active_downloads[self._id]
 		_completed_downloads[self._id] = self.getState()
 	
