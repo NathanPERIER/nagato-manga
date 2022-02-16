@@ -57,7 +57,7 @@ class ChapterDownload :
 		self._status = DownloadState.QUEUED
 		self._future = _executor.submit(self.perform)
 		self._future.add_done_callback(self.after)
-		logger.info('Download {} submitted', self._id)
+		logger.info('Download %s submitted', self._id)
 		return self._id
 
 	def perform(self) :
@@ -69,11 +69,11 @@ class ChapterDownload :
 				self._status = DownloadState.SAVING
 			self._status = DownloadState.COMPLETE
 		except Exception :
-			logger.error('Error in download {}:\n{}', self._id, traceback.format_exc())
+			logger.error('Error in download %s:\n%s', self._id, traceback.format_exc())
 			self._status = DownloadState.FAILED
 	
 	def after(self, _=None) :
-		logger.info('Download {} exited with status {}', self._id, self._status)
+		logger.info('Download %s exited with status %s', self._id, str(self._status))
 		self._end = time.time()
 		del _active_downloads[self._id]
 		_completed_downloads[self._id] = self.getState()
