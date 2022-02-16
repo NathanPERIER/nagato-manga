@@ -14,6 +14,8 @@ This file lists the available endpoints for the API.
 - [`GET /api/manga/chapters`](#get-apimangachapters)
 - [`POST /api/download/chapter`](#post-apidownloadchapter)
 - [`POST /api/download/chapters`](#post-apidownloadchapters)
+- [`GET /api/dl_state/<id>`](#get-apidlstateid)
+- [`GET /api/dl_states/agregate`](#get-apidlstatesagregate)
 
 
 ## `GET /api/ping`
@@ -493,8 +495,225 @@ Content-Type: application/json
 
 ## `POST /api/download/chapters`
 
+Starts the downloads for several chapters and returns a list of download identifiers.
+
+### Request content
+
+The body of the request must be a json object that can have two fields :
+ - `urls`: a list of URLs of chapters to download, potentially on several sites.
+ - `sites`: an object where the keys are site names and the values are lists of chapter identifiers
+
+*Note : if one field is associated to an empty list/object, you don't need to specify it*
+
+### Example request
+
+```Bash
+curl --header "Content-Type: application/json" -d '{"urls": ["https://mangadex.org/chapter/ec562f76-4654-4621-8198-247622955fdd/1"], "sites": {"mangadex.org": ["75011fda-0eec-4617-a677-e4eb8bb8f55b", "8a82dbff-60a2-4131-83c7-b42df0f7864d"]}}' -X POST 'localhost:8090/api/download/chapters'
+```
+
+### Example responses
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+["yfu7Rf1Xe3UHjwDoA5fp7DxA0jYstHWn", "PGUiBStCng-vty0nSduNHegMunyIMWnN", "h2h2UQA_O05AMkkbZJs7mouXd3G5gQ1S"]
+```
+
+If the content type is not `application/json` or the json is invalid :
+```
+HTTP/1.1 400 BAD REQUEST
+
+Content of request is not well-formed JSON
+```
+
 [`^ Back to top ^`][top]
 
+
+## `GET /api/dl_state/<id>`
+
+Retrieves the state of a download.
+
+### Example request
+
+```Bash
+curl -X GET 'localhost:8090/api/dl_state/yfu7Rf1Xe3UHjwDoA5fp7DxA0jYstHWn'
+```
+
+### Example responses
+
+For a download that was just created :
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+	"file": "Dr. Stone -.- C1 Z=1: Stone World", 
+	"status": "CREATED", 
+	"completion": 0.0, 
+	"created": 1645036100444
+}
+```
+
+For a download that is waiting in the queue :
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+	"file": "Dr. Stone -.- C1 Z=1: Stone World", 
+	"status": "QUEUED", 
+	"completion": 0.0, 
+	"created": 1645036100444
+}
+
+For a download that is running :
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+	"file": "Dr. Stone -.- C1 Z=1: Stone World", 
+	"status": "PROCESSING", 
+	"completion": 0.25, 
+	"created": 1645036100444, 
+	"begin": 1645036116016
+}
+```
+
+For a download that is in the process of saving files to the disk :
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+	"file": "Dr. Stone -.- C1 Z=1: Stone World", 
+	"status": "SAVING", 
+	"completion": 1.0, 
+	"created": 1645036100444, 
+	"begin": 1645036116016
+}
+
+For a download that succeeded :
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+	"file": "Dr. Stone -.- C1 Z=1: Stone World", 
+	"status": "COMPLETE", 
+	"completion": 1.0, 
+	"created": 1645036100444, 
+	"begin": 1645036116016, 
+	"end": 1645036142822
+}
+```
+
+For a download that failed :
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+	"file": "Dr. Stone -.- C1 Z=1: Stone World", 
+	"status": "FAILED", 
+	"completion": 0.33, 
+	"created": 1645036100444, 
+	"begin": 1645036116016, 
+	"end": 1645036142822
+}
+```
+
+For a download that was cancelled :
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+	"file": "Dr. Stone -.- C1 Z=1: Stone World", 
+	"status": "CANCELLED", 
+	"completion": 0.0, 
+	"created": 1645036100444, 
+	"begin": 1645036116016, 
+	"end": 1645036142822
+}
+```
+
+For a download that doesn't exist :
+```
+HTTP/1.1 404 NOT FOUND
+
+No download registered with the id AAAAAAAAAAAAAAAA
+```
+
+[`^ Back to top ^`][top]
+
+
+## `GET /api/dl_states/agregate`
+
+Retrieves the state of multiple downloads at once.
+
+### Example requests
+
+With arguments in the request parameters :
+```Bash
+curl -X GET 'localhost:8090/api/dl_states/agregate?ids=yfu7Rf1Xe3UHjwDoA5fp7DxA0jYstHWn&ids=PGUiBStCng-vty0nSduNHegMunyIMWnN&ids=AAAAAAAAAAAA'
+```
+
+Equivalent :
+```Bash
+curl -X GET 'localhost:8090/api/dl_states/agregate?ids[]=yfu7Rf1Xe3UHjwDoA5fp7DxA0jYstHWn&ids[]=PGUiBStCng-vty0nSduNHegMunyIMWnN&ids[]=AAAAAAAAAAAA'
+```
+
+If no arguments in the request parameters, simply retrieves the states for all existing downloads :
+```Bash
+curl -X GET 'localhost:8090/api/dl_states/agregate'
+```
+
+### Example response
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+	"yfu7Rf1Xe3UHjwDoA5fp7DxA0jYstHWn": {
+		"file": "Dr. Stone -.- C1 Z=1: Stone World", 
+		"status": "COMPLETE", 
+		"completion": 1.0, 
+		"created": 1645036100444, 
+		"begin": 1645036116016, 
+		"end": 1645036142822
+	},
+	"yfu7Rf1Xe3UHjwDoA5fp7DxA0jYstHWn": {
+		"file": "Dr. Stone -.- C1 Z=1: Stone World", 
+		"status": "PROCESSING", 
+		"completion": 0.375, 
+		"created": 1645036100456, 
+		"begin": 1645036142892
+	},
+	"AAAAAAAAAAAA": null
+}
+```
+
+*Note : If an id doesn't correspond to a registered download, the associated value in the response will be `null` but the HTTP return code will still be `200`*
+
+[`^ Back to top ^`][top]
+
+
+## `POST /api/cancel/download/<id>`
+
+[`^ Back to top ^`][top]
+
+
+## `POST /api/cancel/downloads`
+
+[`^ Back to top ^`][top]
+
+
+## `DELETE /api/downloads/history`
+
+[`^ Back to top ^`][top]
 
 
 [top]: #nagato-api

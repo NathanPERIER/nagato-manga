@@ -49,7 +49,7 @@ class BaseDownloader :
 	def getChapters(self, manga_id) :
 		raise NotImplementedError
 	 
-	def downloadChapters(self, ids) :
+	def downloadChapters(self, ids) -> "list[str]" :
 		return [ChapterDownload(self, chapter_id).submit() for chapter_id in ids]
 	
 	def downloadChapter(self, chapter_id, archiver: Archiver) :
