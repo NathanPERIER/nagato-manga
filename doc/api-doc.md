@@ -634,7 +634,6 @@ Content-Type: application/json
 	"status": "CANCELLED", 
 	"completion": 0.0, 
 	"created": 1645036100444, 
-	"begin": 1645036116016, 
 	"end": 1645036142822
 }
 ```
@@ -660,12 +659,12 @@ With arguments in the request parameters :
 curl -X GET 'localhost:8090/api/dl_states/agregate?ids=yfu7Rf1Xe3UHjwDoA5fp7DxA0jYstHWn&ids=PGUiBStCng-vty0nSduNHegMunyIMWnN&ids=AAAAAAAAAAAA'
 ```
 
-Equivalent :
+Or equivalently :
 ```Bash
 curl -X GET 'localhost:8090/api/dl_states/agregate?ids[]=yfu7Rf1Xe3UHjwDoA5fp7DxA0jYstHWn&ids[]=PGUiBStCng-vty0nSduNHegMunyIMWnN&ids[]=AAAAAAAAAAAA'
 ```
 
-If no arguments in the request parameters, simply retrieves the states for all existing downloads :
+If there are no arguments in the request parameters, simply retrieves the states for all existing downloads :
 ```Bash
 curl -X GET 'localhost:8090/api/dl_states/agregate'
 ```
@@ -685,7 +684,7 @@ Content-Type: application/json
 		"begin": 1645036116016, 
 		"end": 1645036142822
 	},
-	"yfu7Rf1Xe3UHjwDoA5fp7DxA0jYstHWn": {
+	"PGUiBStCng-vty0nSduNHegMunyIMWnN": {
 		"file": "Dr. Stone -.- C1 Z=1: Stone World", 
 		"status": "PROCESSING", 
 		"completion": 0.375, 
@@ -703,10 +702,86 @@ Content-Type: application/json
 
 ## `POST /api/cancel/download/<id>`
 
+Cancels a download that has been previously submitted, leaving it in the `CANCELLED` state. This is only possible if the download is still in the queue, a download that already begun cannot be stopped. 
+
+A boolean is returned, indicating wether the download was successfully stopped or not.
+
+### Example request
+
+```Bash
+curl -X POST 'localhost:8090/api/cancel/download/yfu7Rf1Xe3UHjwDoA5fp7DxA0jYstHWn'
+```
+
+### Example responses
+
+If the download was succesfully stopped :
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+true
+```
+
+If the download could not be stopped :
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+false
+```
+
+For a download that doesn't exist :
+```
+HTTP/1.1 404 NOT FOUND
+
+No download registered with the id AAAAAAAAAAAAAAAA
+```
+
 [`^ Back to top ^`][top]
 
 
 ## `POST /api/cancel/downloads`
+
+Cancels several downloads at once, returning for each one a boolean indicating if it was successfully stopped.
+
+### Example requests
+
+With arguments in the request parameters :
+```Bash
+curl -X POST 'localhost:8090/api/cancel/downloads?ids=yfu7Rf1Xe3UHjwDoA5fp7DxA0jYstHWn&ids=PGUiBStCng-vty0nSduNHegMunyIMWnN&ids=AAAAAAAAAAAA'
+```
+
+Or equivalently :
+```Bash
+curl -X POST 'localhost:8090/api/cancel/downloads?ids[]=yfu7Rf1Xe3UHjwDoA5fp7DxA0jYstHWn&ids[]=PGUiBStCng-vty0nSduNHegMunyIMWnN&ids[]=AAAAAAAAAAAA'
+```
+
+With the arguments in the request's body (only checked if no request parameters are found) :
+```Bash
+curl --header "Content-Type: application/json" -d '["yfu7Rf1Xe3UHjwDoA5fp7DxA0jYstHWn", "PGUiBStCng-vty0nSduNHegMunyIMWnN", "AAAAAAAAAAAA"]' -X POST 'localhost:8090/api/cancel/downloads'
+```
+
+### Example responses
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+	"yfu7Rf1Xe3UHjwDoA5fp7DxA0jYstHWn": false,
+	"PGUiBStCng-vty0nSduNHegMunyIMWnN": true,
+	"AAAAAAAAAAAA": false
+}
+```
+
+If no list of ids is provided :
+```
+HTTP/1.1 400 BAD REQUEST
+
+Missing ids of downloads to cancel
+```
+
+*Note : If an id doesn't correspond to a registered download, the associated value in the response will be `false` but the HTTP return code will still be `200`*
 
 [`^ Back to top ^`][top]
 
