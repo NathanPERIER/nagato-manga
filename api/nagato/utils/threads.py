@@ -67,6 +67,7 @@ class ChapterDownload :
 		try :
 			self._begin = _timestamp()
 			self._status = DownloadState.PROCESSING
+			logger.info('Download %s processing', self._id)
 			with self.getArchiver() as archiver :
 				self._downloader.downloadChapter(self._chapter, archiver)
 				self._status = DownloadState.SAVING

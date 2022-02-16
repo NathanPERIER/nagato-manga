@@ -5,8 +5,8 @@ import logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s", datefmt='%d/%m/%Y %H:%M:%S')
 
 from nagato.downloaders.base import BaseDownloader
-from nagato.downloaders import downloaderForSite, listSites, siteForURL, downloaderForURL
-from nagato.utils import errors, params
+from nagato.downloaders import listSites, siteForURL, downloaderForURL
+from nagato.utils import errors, params, threads
 
 import json
 import base64
@@ -117,3 +117,18 @@ def postChaptersDownloadBody(data: dict) :
 		res.extend(dl.downloadChapters(site_data['chapters']))
 	return Response(json.dumps(res), 200, content_type='application/json')
 
+@app.route('/api/dl_state/<dl_id>', methods=['GET'])
+def getDownloadState(dl_id) :
+	res = threads.getDownloadState(dl_id)
+	return Response(json.dumps(res), 200, content_type='application/json')
+
+@app.route('/api/dl_states/agregate', methods=['GET'])
+def getDownloadStates() :
+	if 'ids' in request.args :
+		ids = request.args.getlist('ids')
+	elif 'ids[]' in request.args :
+		ids = request.args.getlist('ids[]')
+	else :
+		ids = request.get_json(silent=True)
+	res = threads.getAllDownloadStates(ids)
+	return Response(json.dumps(res), 200, content_type='application/json')
