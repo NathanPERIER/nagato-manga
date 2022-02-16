@@ -85,7 +85,7 @@ class ChapterDownload :
 	def getState(self) -> dict :
 		res = {
 			'file': self._archiver.getFilename(),
-			'status': str(self._status),
+			'status': self._status.name,
 			'completion': self._archiver.getProgress(),
 			'created': self._creation
 		}
