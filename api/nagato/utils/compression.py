@@ -128,7 +128,7 @@ class Archiver :
 		Returns:
 			float: The proprtion of downloaded files (between 0 and 1 included)
 		'''
-		return self._cpt / self._maxlen
+		return self._cpt / self._npages
 	
 	def __enter__(self) :
 		'''__enter__ Method called at the beginning of a `with ... as ...` block
