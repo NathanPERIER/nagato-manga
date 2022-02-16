@@ -1,15 +1,18 @@
-from asyncio.log import logger
+from nagato.utils.errors import ApiNotFoundError
 from nagato.utils.compression import Archiver
 
 import time
 import hashlib
+import logging
+import traceback
 from enum import Enum
 from base64 import b64encode
 from concurrent.futures import Future, ThreadPoolExecutor
-import traceback
+
+logger = logging.getLogger(__name__)
 
 
-_active_downloads = {}
+_active_downloads: "dict[str,ChapterDownload]" = {}
 
 _completed_downloads = {}
 
@@ -104,3 +107,30 @@ class ChapterDownload :
 
 def clearHistory() :
 	_completed_downloads.clear()
+
+def getDownloadState(download_id: str, best_effort=False) :
+	if download_id in _active_downloads :
+		return _active_downloads[download_id].getState()
+	if download_id in _completed_downloads :
+		return _completed_downloads[download_id]
+	if best_effort :
+		return None
+	raise ApiNotFoundError(f"No download registered with the id {download_id}")
+
+def getAllDownloadStates(download_ids: "list[str]" = None) :
+	if download_ids is not None :
+		return {dl_id: getDownloadState(dl_id, True) for dl_id in download_ids}
+	return {
+		**{dl_id: cdl.getState() for dl_id, cdl in _active_downloads.items()},
+		**_completed_downloads
+	}
+
+def cancelDownload(download_id: str, best_effort=False) -> bool :
+	if download_id in _active_downloads :
+		return _active_downloads[download_id].cancel()
+	if best_effort or download_id in _completed_downloads :
+		return False
+	raise ApiNotFoundError(f"No download registered with the id {download_id}")
+	
+def cancelDownloads(download_ids: "list[str]") -> "dict[str,bool]" :
+	return {dl_id: cancelDownload(dl_id, True) for dl_id in download_ids}
