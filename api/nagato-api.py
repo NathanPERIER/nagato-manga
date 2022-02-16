@@ -124,11 +124,29 @@ def getDownloadState(dl_id) :
 
 @app.route('/api/dl_states/agregate', methods=['GET'])
 def getDownloadStates() :
+	ids = None
+	if 'ids' in request.args :
+		ids = request.args.getlist('ids')
+	elif 'ids[]' in request.args :
+		ids = request.args.getlist('ids[]')
+	res = threads.getAllDownloadStates(ids)
+	return Response(json.dumps(res), 200, content_type='application/json')
+
+@app.route('/api/cancel/download/<dl_id>', methods=['POST'])
+def postCancelDownload(dl_id) :
+	res = threads.cancelDownload(dl_id)
+	return Response(json.dumps(res), 200, content_type='application/json')
+
+@app.route('/api/cancel/downloads', methods=['POST'])
+def postCancelDownloads() :
 	if 'ids' in request.args :
 		ids = request.args.getlist('ids')
 	elif 'ids[]' in request.args :
 		ids = request.args.getlist('ids[]')
 	else :
 		ids = request.get_json(silent=True)
-	res = threads.getAllDownloadStates(ids)
+	if ids is None :
+		raise errors.ApiQueryError('Missing ids of downloads to cancel')
+	res = threads.cancelDownloads(ids)
 	return Response(json.dumps(res), 200, content_type='application/json')
+

@@ -28,6 +28,9 @@ class DownloadState(Enum) :
 	FAILED     = -1
 	CANCELLED  = -2
 
+	def isFinal(self) :
+		return self in [DownloadState.COMPLETE, DownloadState.FAILED, DownloadState.CANCELLED]
+
 
 def _generateId(t, filename) :
 	for _ in range(10) :
@@ -53,6 +56,7 @@ class ChapterDownload :
 		self._future = None
 		self._begin = None
 		self._end = None
+		self._cancel = False
 		_active_downloads[self._id] = self
 	
 	def submit(self) :
@@ -75,8 +79,10 @@ class ChapterDownload :
 		except Exception :
 			logger.error('Error in download %s:\n%s', self._id, traceback.format_exc())
 			self._status = DownloadState.FAILED
-	
+
 	def after(self, _=None) :
+		if not self._status.isFinal() :
+			self._status = DownloadState.CANCELLED if self._cancel else DownloadState.FAILED
 		logger.info('Download %s exited with status %s', self._id, str(self._status))
 		self._end = _timestamp()
 		del _active_downloads[self._id]
@@ -96,17 +102,12 @@ class ChapterDownload :
 		return res
 	
 	def cancel(self) :
-		res = self._future.cancel()
-		if res :
-			self._status = DownloadState.CANCELLED
-			self.after()
-		return res
+		self._cancel = True
+		logger.info('Attempt to cancel download %s', self._id)
+		return self._future.cancel()
 
 	def getArchiver(self) -> Archiver :
 		return self._archiver
-	
-	def getFuture(self) -> Future :
-		return self._future
 
 
 def clearHistory() :
