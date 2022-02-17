@@ -112,6 +112,7 @@ class Archiver :
 		self._destination = downloader.getDestinationFolder(self._format)
 		self._filename = sanitiseNodeName(downloader.getFilename(self._format))
 		self._cpt = 0
+		self._rawsize = 0
 		self._maxlen = len(str(self._npages))
 
 	def getFilename(self) :
@@ -129,6 +130,14 @@ class Archiver :
 			float: The proprtion of downloaded files (between 0 and 1 included)
 		'''
 		return self._cpt / self._npages
+	
+	def getRawSize(self) -> int :
+		'''getRawSize Retrieves the total size of files downloaded so far (uncompressed)
+
+		Returns:
+			int: the size of the files, in bytes
+		'''		
+		return self._rawsize
 	
 	def __enter__(self) :
 		'''__enter__ Method called at the beginning of a `with ... as ...` block
@@ -150,6 +159,7 @@ class Archiver :
 			file (bytes): The page as binary data
 		'''	
 		self._cpt += 1
+		self._rawsize += len(file)
 		filename = nameImage(file, self._cpt, self._maxlen)
 		self.processFile(file, filename)
 	
