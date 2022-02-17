@@ -14,9 +14,11 @@ This file lists the available endpoints for the API.
 - [`GET /api/manga/chapters`](#get-apimangachapters)
 - [`POST /api/download/chapter`](#post-apidownloadchapter)
 - [`POST /api/download/chapters`](#post-apidownloadchapters)
-- [`GET /api/dl_state/<id>`](#get-apidlstateid)
-- [`GET /api/dl_states/agregate`](#get-apidlstatesagregate)
-
+- [`GET /api/dl_state/<id>`](#get-apidl_stateid)
+- [`GET /api/dl_states/agregate`](#get-apidl_statesagregate)
+- [`POST /api/cancel/download/<id>`](#post-apicanceldownloadid)
+- [`POST /api/cancel/downloads`](#post-apicanceldownloads)
+- [`DELETE /api/downloads/history`](#delete-apidownloadshistory)
 
 ## `GET /api/ping`
 
@@ -787,6 +789,25 @@ Missing ids of downloads to cancel
 
 
 ## `DELETE /api/downloads/history`
+
+Clears the history of downloaded chapters.
+
+### Example request
+
+```Bash
+curl -X DELETE 'localhost:8090/api/downloads/history'
+```
+
+### Example response
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+	"deleted": 3
+}
+```
 
 [`^ Back to top ^`][top]
 
