@@ -110,8 +110,10 @@ class ChapterDownload :
 		return self._archiver
 
 
-def clearHistory() :
+def clearHistory() -> int :
+	res = len(_completed_downloads)
 	_completed_downloads.clear()
+	return res
 
 def getDownloadState(download_id: str, best_effort=False) :
 	if download_id in _active_downloads :
