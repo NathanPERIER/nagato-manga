@@ -150,3 +150,8 @@ def postCancelDownloads() :
 	res = threads.cancelDownloads(ids)
 	return Response(json.dumps(res), 200, content_type='application/json')
 
+@app.route('/api/downloads/history', methods=['DELETE'])
+def deleteDownloadsHistory() :
+	return {
+		'deleted': threads.clearHistory()
+	}
