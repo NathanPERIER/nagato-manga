@@ -553,6 +553,7 @@ Content-Type: application/json
 	"file": "Dr. Stone -.- C1 Z=1: Stone World", 
 	"status": "CREATED", 
 	"completion": 0.0, 
+	"size": 0,
 	"created": 1645036100444
 }
 ```
@@ -566,6 +567,7 @@ Content-Type: application/json
 	"file": "Dr. Stone -.- C1 Z=1: Stone World", 
 	"status": "QUEUED", 
 	"completion": 0.0, 
+	"size": 0,
 	"created": 1645036100444
 }
 
@@ -578,6 +580,7 @@ Content-Type: application/json
 	"file": "Dr. Stone -.- C1 Z=1: Stone World", 
 	"status": "PROCESSING", 
 	"completion": 0.25, 
+	"size": 3590383,
 	"created": 1645036100444, 
 	"begin": 1645036116016
 }
@@ -592,6 +595,7 @@ Content-Type: application/json
 	"file": "Dr. Stone -.- C1 Z=1: Stone World", 
 	"status": "SAVING", 
 	"completion": 1.0, 
+	"size": 9760627,
 	"created": 1645036100444, 
 	"begin": 1645036116016
 }
@@ -605,6 +609,7 @@ Content-Type: application/json
 	"file": "Dr. Stone -.- C1 Z=1: Stone World", 
 	"status": "COMPLETE", 
 	"completion": 1.0, 
+	"size": 9760627,
 	"created": 1645036100444, 
 	"begin": 1645036116016, 
 	"end": 1645036142822
@@ -620,6 +625,7 @@ Content-Type: application/json
 	"file": "Dr. Stone -.- C1 Z=1: Stone World", 
 	"status": "FAILED", 
 	"completion": 0.33, 
+	"size": 4242726,
 	"created": 1645036100444, 
 	"begin": 1645036116016, 
 	"end": 1645036142822
@@ -635,6 +641,7 @@ Content-Type: application/json
 	"file": "Dr. Stone -.- C1 Z=1: Stone World", 
 	"status": "CANCELLED", 
 	"completion": 0.0, 
+	"size": 0,
 	"created": 1645036100444, 
 	"end": 1645036142822
 }

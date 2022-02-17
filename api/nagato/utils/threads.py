@@ -93,6 +93,7 @@ class ChapterDownload :
 			'file': self._archiver.getFilename(),
 			'status': self._status.name,
 			'completion': self._archiver.getProgress(),
+			'size': self._archiver.getRawSize(),
 			'created': self._creation
 		}
 		if self._begin is not None :
