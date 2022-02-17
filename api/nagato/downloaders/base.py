@@ -54,7 +54,9 @@ class BaseDownloader :
 		return [ChapterDownload(self, chapter_id).submit() for chapter_id in ids]
 	
 	def downloadChapter(self, chapter_id, archiver: Archiver) :
-		raise NotImplementedError
+		images, requester = self.getChapterUrls(chapter_id)
+		for image_url in images :
+			archiver.addFile(requester.requestBinary(image_url, 0.1))
 	
 	def getChapterUrls(self, chapter_id) -> "tuple[list[str], Requester]" :
 		raise NotImplementedError

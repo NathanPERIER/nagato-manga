@@ -167,12 +167,3 @@ class MangadexDownloader(BaseDownloader) :
 		hash = chapter['hash']
 		return [f"{base_url}/data/{hash}/{image}" for image in chapter['data']], self._requester
 
-	def downloadChapter(self, chapter_id, archiver: Archiver) :
-		data = self._requester.requestJson(f"{API_ATHOME_URL}/{chapter_id}")
-		base_url = data['baseUrl']
-		chapter = data['chapter']
-		hash = chapter['hash']
-		images = chapter['data']
-		for image in images :
-			archiver.addFile(self._requester.requestBinary(f"{base_url}/data/{hash}/{image}", delay=0.1))
-
