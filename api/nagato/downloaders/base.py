@@ -1,4 +1,5 @@
 from string import Template
+from nagato.utils.request import Requester
 from nagato.utils.errors import ApiConfigurationError
 from nagato.utils.sanitise import sanitiseNodeName
 from nagato.utils.compression import Archiver, getArchiverForMethod
@@ -53,6 +54,9 @@ class BaseDownloader :
 		return [ChapterDownload(self, chapter_id).submit() for chapter_id in ids]
 	
 	def downloadChapter(self, chapter_id, archiver: Archiver) :
+		raise NotImplementedError
+	
+	def getChapterUrls(self, chapter_id) -> "tuple[list[str], Requester]" :
 		raise NotImplementedError
 
 	def getChapterInfo(self, chapter_id) :
