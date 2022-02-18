@@ -4,13 +4,16 @@ from nagato.utils.compression import Archiver
 import time
 import hashlib
 import logging
+import threading
 import traceback
 from enum import Enum
 from base64 import b64encode
-from concurrent.futures import Future, ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
 
 logger = logging.getLogger(__name__)
 
+
+mutex = threading.Lock()
 
 _active_downloads: "dict[str,ChapterDownload]" = {}
 
@@ -29,7 +32,29 @@ class DownloadState(Enum) :
 	CANCELLED  = -2
 
 	def isFinal(self) :
-		return self in [DownloadState.COMPLETE, DownloadState.FAILED, DownloadState.CANCELLED]
+		return self in [
+			DownloadState.COMPLETE, 
+			DownloadState.FAILED, 
+			DownloadState.CANCELLED
+		]
+
+
+class MutexLock() :
+
+	def __init__(self, mutex: threading.Lock) :
+		self._mutex = mutex
+	
+	def __enter__(self) :
+		if self._mutex is not None :
+			self._mutex.acquire()
+		return self
+
+	def __exit__(self, exc_type, exc_value, tb) :
+		if self._mutex is not None :
+			self._mutex.release()
+		if exc_type is not None :
+			# traceback.print_exception(exc_type, exc_value, tb)
+			return False
 
 
 def _generateId(t, filename) :
@@ -51,17 +76,18 @@ class ChapterDownload :
 		self._chapter = chapter_id
 		self._archiver : Archiver = downloader.getArchiver(chapter_id)
 		self._creation = _timestamp()
-		self._id = _generateId(self._creation, self._archiver.getFilename())
-		self._status = DownloadState.CREATED
+		self.setStatus(DownloadState.CREATED)
 		self._future = None
 		self._begin = None
 		self._end = None
-		self._cancel = False
-		_active_downloads[self._id] = self
+		self._cancelled = False
+		with MutexLock(mutex) :
+			self._id = _generateId(self._creation, self._archiver.getFilename())
+			_active_downloads[self._id] = self
 	
-	def submit(self) :
+	def submit(self) -> str:
 		self._creation = _timestamp() # Update the creation date to be the time of submission (just in case)
-		self._status = DownloadState.QUEUED
+		self.setStatus(DownloadState.QUEUED)
 		self._future = _executor.submit(self.perform)
 		self._future.add_done_callback(self.after)
 		logger.info('Download %s submitted', self._id)
@@ -70,23 +96,34 @@ class ChapterDownload :
 	def perform(self) :
 		try :
 			self._begin = _timestamp()
-			self._status = DownloadState.PROCESSING
+			self.setStatus(DownloadState.PROCESSING)
 			logger.info('Download %s processing', self._id)
 			with self.getArchiver() as archiver :
 				self._downloader.downloadChapter(self._chapter, archiver)
-				self._status = DownloadState.SAVING
-			self._status = DownloadState.COMPLETE
+				self.setStatus(DownloadState.SAVING)
+			self.setStatus(DownloadState.COMPLETE)
 		except Exception :
 			logger.error('Error in download %s:\n%s', self._id, traceback.format_exc())
-			self._status = DownloadState.FAILED
+			self.setStatus(DownloadState.FAILED)
+
+	def setStatus(self, status: DownloadState) :
+		if status.isFinal() :
+			self._end = _timestamp()
+			mutex.acquire()
+			self._status = status
+			if self._id in _active_downloads :
+				del _active_downloads[self._id]
+			else :
+				logger.warning('Download %s was already inactive', self._id)
+			_completed_downloads[self._id] = self.getState()
+			mutex.release()
+		else :
+			self._status = status
 
 	def after(self, _=None) :
 		if not self._status.isFinal() :
-			self._status = DownloadState.CANCELLED if self._cancel else DownloadState.FAILED
+			self.setStatus(DownloadState.CANCELLED if self._cancelled else DownloadState.FAILED)
 		logger.info('Download %s exited with status %s', self._id, str(self._status))
-		self._end = _timestamp()
-		del _active_downloads[self._id]
-		_completed_downloads[self._id] = self.getState()
 	
 	def getState(self) -> dict :
 		res = {
@@ -103,42 +140,50 @@ class ChapterDownload :
 		return res
 	
 	def cancel(self) :
-		self._cancel = True
+		if self._cancelled :
+			return False
 		logger.info('Attempt to cancel download %s', self._id)
-		return self._future.cancel()
+		self._cancelled = self._future.cancel()
+		return self._cancelled
 
 	def getArchiver(self) -> Archiver :
 		return self._archiver
 
 
 def clearHistory() -> int :
+	mutex.acquire()
 	res = len(_completed_downloads)
 	_completed_downloads.clear()
+	mutex.release()
 	return res
 
 def getDownloadState(download_id: str, best_effort=False) :
-	if download_id in _active_downloads :
-		return _active_downloads[download_id].getState()
-	if download_id in _completed_downloads :
-		return _completed_downloads[download_id]
-	if best_effort :
-		return None
+	with MutexLock(None if best_effort else mutex) :
+		if download_id in _active_downloads :
+			return _active_downloads[download_id].getState()
+		if download_id in _completed_downloads :
+			return _completed_downloads[download_id]
+		if best_effort :
+			return None
 	raise ApiNotFoundError(f"No download registered with the id {download_id}")
 
 def getAllDownloadStates(download_ids: "list[str]" = None) :
-	if download_ids is not None :
-		return {dl_id: getDownloadState(dl_id, True) for dl_id in download_ids}
-	return {
-		**{dl_id: cdl.getState() for dl_id, cdl in _active_downloads.items()},
-		**_completed_downloads
-	}
+	with MutexLock(mutex) :
+		if download_ids is not None :
+			return {dl_id: getDownloadState(dl_id, True) for dl_id in download_ids}
+		return {
+			**{dl_id: cdl.getState() for dl_id, cdl in _active_downloads.items()},
+			**_completed_downloads
+		}
 
 def cancelDownload(download_id: str, best_effort=False) -> bool :
-	if download_id in _active_downloads :
-		return _active_downloads[download_id].cancel()
-	if best_effort or download_id in _completed_downloads :
-		return False
+	with MutexLock(None if best_effort else mutex) :
+		if download_id in _active_downloads :
+			return _active_downloads[download_id].cancel()
+		if best_effort or download_id in _completed_downloads :
+			return False
 	raise ApiNotFoundError(f"No download registered with the id {download_id}")
 	
 def cancelDownloads(download_ids: "list[str]") -> "dict[str,bool]" :
-	return {dl_id: cancelDownload(dl_id, True) for dl_id in download_ids}
+	with MutexLock(mutex) :
+		return {dl_id: cancelDownload(dl_id, True) for dl_id in download_ids}
