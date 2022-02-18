@@ -2,7 +2,6 @@ from nagato.utils.sanitise import sanitiseNodeName
 
 import io
 import os
-import traceback
 import zipfile
 import logging
 
@@ -185,7 +184,8 @@ class Archiver :
 		Derived classes must override this method to free potential allocated resources.
 		'''
 		if exc_type is not None:
-			traceback.print_exception(exc_type, exc_value, tb)
+			# traceback.print_exception(exc_type, exc_value, tb)
+			return False
 
 
 @dl_method('files')
@@ -263,9 +263,13 @@ class ZipArchiver(Archiver) :
 
 		Saves the content of the zip file to the disc, then frees the zip object and the buffer.
 		'''
-		if exc_type is not None:
-			traceback.print_exception(exc_type, exc_value, tb)
 		self._zipfile.close()
+		if exc_type is not None:
+			# traceback.print_exception(exc_type, exc_value, tb)
+			self._buffer.close()
+			return False
+		if self._npages != self._cpt :
+			logger.warning('Expected %d pages, got %d', self._npages, self._cpt)
 		filepath = os.path.join(self._destination, f"{self._filename}.zip")
 		with open(filepath, 'wb') as f :
 			f.write(self._buffer.getvalue())
@@ -287,10 +291,18 @@ class CbzArchiver(Archiver) : # TODO comicinfo.xml
 		self._zipfile.writestr(name, io.BytesIO(file).getvalue())
 
 	def __exit__(self, exc_type, exc_value, tb):
-		if exc_type is not None:
-			traceback.print_exception(exc_type, exc_value, tb)
+		'''__exit__ Method called at the end of a `with ... as ...` block
+
+		Saves the content of the zip file to the disc, then frees the zip object and the buffer.
+		'''
 		self._zipfile.close()
-		filepath = os.path.join(self._destination, f"{self._filename}.cbz")
+		if exc_type is not None:
+			# traceback.print_exception(exc_type, exc_value, tb)
+			self._buffer.close()
+			return False
+		if self._npages != self._cpt :
+			logger.warning('Expected %d pages, got %d', self._npages, self._cpt)
+		filepath = os.path.join(self._destination, f"{self._filename}.zip")
 		with open(filepath, 'wb') as f :
 			f.write(self._buffer.getvalue())
 		self._buffer.close()
