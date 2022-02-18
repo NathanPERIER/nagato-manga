@@ -327,6 +327,10 @@ Retrieves some general information on a chapter. The result is a JSON object wit
      - `id`: the identifier of the team on the website
 	 - `name`: the name of the team
 	 - `site`: the website of the scanlation team\*
+ - `date`: an object representing the date at which this chapter was published/modified
+     - `day`: the day between 1 and 31\*
+	 - `month`: the month between 1 and 12\*
+	 - `year`: the full year (e.g. 2021)\*
 
 \* may be `null` if unknown
 
