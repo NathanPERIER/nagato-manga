@@ -84,10 +84,14 @@ class MyDownloader(BaseDownloader) :
 			}
 		}
 	
+	def getChapterUrls(self, chapter_id: str) -> "tuple[list[str], Requester]" :
+		return self._requester.requestJson(f"https://exmple.com/api/pages/{chapter_id}")
+
 	def downloadChapter(self, chapter_id: str, archiver: Archiver) :
-		images = [] # get images from the site
-		for image in images :
-			archiver.addFile(image)
+		# Default implementation below, only override if necessary
+		images, requester = self.getChapterUrls(chapter_id)
+		for image_url in images :
+			archiver.addFile(requester.requestBinary(image_url, 0.1))
 ```
 
 The `@custom.register` decorator is necessary for the downloader to be registered by the API. The `site` provided will be used to match the beginning of a URL to determine which downloader should be used to process the URL. 
@@ -121,9 +125,25 @@ Retrieves the list of chapters in the manga associated with the identifier. The 
 
 Retrives information on the chapter associated with the identfier. The data returned is stored in a `dict`, formatted as described [here](api-doc.md#get-apichapterinfo).
 
+### `getChapterUrls(self, chapter_id)`
+
+Retrieves the URLs of the specified chapter's pages in a list, along with a `Requester` to download them (see [below](#http-requests)). 
+
 ### `downloadChapter(self, chapter_id, archiver)`
 
-Downloads the pages for the chapter associated with the identifier and adds them to the `Archiver` using the `archiver.addFile` method. Note that the example code given above is sub-optimal. It would be more efficient to have a separate function that retrieves one page at a time from the site and immediately adds it to the archiver. This should look like something along the lines of the following code, with `getImageFromSite` a function that retrieves a page of the chapter based on some kind of identifier and `getImageIds` a function that retrieves the identifiers of all the pages in the chapter :
+Downloads the pages for the chapter associated with the identifier and adds them to the `Archiver` using the `archiver.addFile` method. This uses the `getChapterUrls` method by default, downloading the resource at each URL in the list with the provided `Requester`. Only override this method if you need to do something more fancy (using different headers for each page for example).
+
+Note that an implementation such as the following one would be sub-optimal :
+
+```Python
+def downloadChapter(self, chapter_id: str, archiver: Archiver) :
+	urls, requester = self.getChapterUrls(chapter_id)
+	images = [requester.requestBinary(image_url, 0.1) for image_url in urls]
+	for image in images :
+		archiver.addFile(image)
+```
+
+It would be more efficient to add each page to the `Archiver` immediately after it is downloaded. This should look like something along the lines of the following code, with `getImageFromSite` a function that retrieves a page of the chapter based on some kind of identifier and `getImageIds` a function that retrieves the identifiers of all the pages in the chapter :
 
 ```Python
 def downloadChapter(self, chapter_id: str, archiver: Archiver) :
@@ -151,7 +171,7 @@ requester = RequesterBuilder.get()                \
 			.setHandler(503, retryTwiceHandler)   \
 			.build()
 
-json_data = requester.requestJson('example.com/...')
+json_data = requester.requestJson('https://example.com/...')
 ```
 
 The `RequesterBuilder` has a bunch of static methods to create a new instance with the correct HTTP verb : `get`, `post`, `put`, `patch`, `delete`, `head`. We mainly expect `get` to be used but the other ones are there just in case.
