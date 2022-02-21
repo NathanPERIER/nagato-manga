@@ -100,6 +100,7 @@ class ChapterDownload :
 			logger.info('Download %s processing', self._id)
 			with self.getArchiver() as archiver :
 				self._downloader.downloadChapter(self._chapter, archiver)
+				archiver.after()
 				self.setStatus(DownloadState.SAVING)
 			self.setStatus(DownloadState.COMPLETE)
 		except Exception :

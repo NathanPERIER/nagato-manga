@@ -5,6 +5,7 @@ from nagato.utils.errors import ApiUrlError, ApiNotFoundError
 from nagato.utils.request import Requester, RequesterBuilder
 
 import re
+from datetime import datetime, timezone
 
 CDN_URL = 'https://uploads.mangadex.org'
 API_URL = 'https://api.mangadex.org'
@@ -126,13 +127,23 @@ class MangadexDownloader(BaseDownloader) :
 				'name': team_data[2]['name'],
 				'site': team_data[2]['website']
 			}
+		dts = attributes['updatedAt']
+		dts = dts[:-3] + dts[-2:]
+		dt = datetime.strptime(dts, '%Y-%m-%dT%H:%M:%S%z')
+		dt.astimezone(timezone.utc)
+		dtf = dt.strftime('%Y %m %d').split(' ')
 		return chapter_data['id'], {
 			'volume': volume,
 			'chapter': chapter,
 			'title': attributes['title'],
 			'lang': attributes['translatedLanguage'],
 			'pages': attributes['pages'],
-			'team': team
+			'team': team,
+			'date': {
+				'day': dtf[2], 
+				'month': dtf[1], 
+				'year': dtf[0]
+			}
 		}
 	
 	def _chaptersFromApiData(self, data, res={}) :

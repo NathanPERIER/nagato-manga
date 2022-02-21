@@ -16,16 +16,16 @@ You can also set the `NAGATO_API_HOST` and `NAGATO_API_PORT` indicating the host
 ### General configuration
 
 The `api` section contains the following attributes that are relevant to the general behaviour of the API :
- - `request.cache.maxlen`: the maximum HTTP requests that can be cached, this can be set to 0 to disable HTTP caching entirely but it is discouraged since certain requests may be repeated quite often. The `NAGATO_CACHE_SIZE` environment variable can also be used.
- - `compression.cbz.additional_data`: a boolean indicating wether or not the API should spend more time (and resources) to infer metadata from the available data on a chapter and a manga for a cbz file. This implies for example loading each image with [`PIL`](https://pillow.readthedocs.io/en/stable/) to check if it is a double page (not implemented yet).
+ - `request.cache.maxlen`: the maximum HTTP requests that can be cached, this can be set to 0 to disable HTTP caching entirely but it is discouraged since certain requests may be repeated quite often. Defaults to `150`. The `NAGATO_CACHE_SIZE` environment variable can also be used.
+ - `compression.cbz.additional_data`: a boolean indicating wether or not the API should spend more time (and resources) to infer metadata from the available data on a chapter and a manga for a cbz file with ComicInfo. This implies for example loading each image with [`PIL`](https://pillow.readthedocs.io/en/stable/) to get its dimensions. Defaults to `false`.
 
 ### Configuration of a downloader
 
 The `global` section contains attributes that are common to all downloaders : 
- - `chapters.destination`: the base directory where chapters will be saved. The `NAGATO_DOWNLOAD_DIR` environment variable can also be used.
- - `chapters.separate`: boolean indicating if the chapters of a same manga should be grouped in a subfolder (`true`) or if all chapters should be stored in the same folder (`false`).
- - `chapters.method`: the method used to save chapters once they are downloaded, should be one of `file`, `zip` or `cbz` (see below for more details). The `NAGATO_CACHE_SIZE` environment variable can also be used.
- - `chapters.format`: A template for a Python [Template String] that will define the name of the chapter when it is saved to the disk (the name of the cbz/zip file or the name of the folder, depending on the selected storing method). The placeholders that can be used are listed below. The `NAGATO_DOWNLOAD_FORMAT` environment variable can also be used.
+ - `chapters.destination`: the base directory where chapters will be saved, defaults to `/data`. The `NAGATO_DOWNLOAD_DIR` environment variable can also be used.
+ - `chapters.separate`: boolean indicating if the chapters of a same manga should be grouped in a subfolder (`true`) or if all chapters should be stored in the same folder (`false`). Defaults to `true`.
+ - `chapters.method`: the method used to save chapters once they are downloaded, should be one of `file`, `zip`, `cbz` or `cbz+comicinfo` (see below for more details). Defaults to `cbz`. The `NAGATO_CACHE_SIZE` environment variable can also be used.
+ - `chapters.format`: A template for a Python [Template String] that will define the name of the chapter when it is saved to the disk (the name of the cbz/zip file or the name of the folder, depending on the selected storing method). The placeholders that can be used are listed below. Defaults to `${manga} -.- C${chapter} ${title}`. The `NAGATO_DOWNLOAD_FORMAT` environment variable can also be used.
 
 A sub-section in the `downloaders` section can contain any of the attributes listed above, these values will override those in `global`. A custom attribute specific to a downloader can be defined in the corresponding sub-section, its value will then be accessible in the constructor of said downloader via the `config` argument. One can also bound an environment variable to the value of a custom attribute by adding an entry in the `env.conf` file.
 
@@ -33,9 +33,10 @@ A sub-section in the `downloaders` section can contain any of the attributes lis
 |-------------------|--------------------------------------------------|
 | `files`           | a folder containing the pages as separate images |
 | `zip`             | a zip containing the images                      |
-| `cbz`             | a [Comic Book Archive] (fancy zip)               |
+| `cbz`             | a [Comic Book Archive]                           |
+| `cbz+comicinfo`   | a [Comic Book Archive] with a [ComicInfo.xml]    |
 
-The table below lists the placeholders that can be used in a chapter name template. For example, the template could be formatted like so : `[${id}] $manga C$chapter`.
+The table below lists the placeholders that can be used in a chapter name template :
 
 | Template placeholder | Meaning                                                        |
 |----------------------|----------------------------------------------------------------|
@@ -53,3 +54,4 @@ The table below lists the placeholders that can be used in a chapter name templa
 
 [Template String]: https://docs.python.org/3/library/string.html#template-strings
 [Comic Book Archive]: https://en.wikipedia.org/wiki/Comic_book_archive
+[ComicInfo.xml]: https://github.com/anansi-project/comicinfo

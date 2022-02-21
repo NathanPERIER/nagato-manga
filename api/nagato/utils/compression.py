@@ -1,25 +1,14 @@
 from nagato.utils.sanitise import sanitiseNodeName
+from nagato.utils import config
 
 import io
 import os
 import zipfile
 import logging
+from lxml import etree
+from PIL import Image
 
 logger = logging.getLogger(__name__)
-
-def inMemoryZip(files) :
-	buffer = io.BytesIO()
-	with zipfile.ZipFile(buffer, 'w') as zip_file:
-		for filename, data in files.items() :
-			zip_file.writestr(filename, io.BytesIO(data).getvalue())
-	return buffer.getvalue()
-
-def makeCbz(images, description=None) :
-	maxlen = len(str(len(images)))
-	files = {nameImage(image, i+1, maxlen): image for i, image in enumerate(images)}
-	if description is not None :
-		pass # Build Comicinfo.xml here
-	return inMemoryZip(files)
 
 
 # Patterns at the beginning of an image that allow us to determine its type
@@ -178,6 +167,11 @@ class Archiver :
 		'''		
 		raise NotImplementedError
 	
+	def after(self) :
+		'''after Method exectued at the end of a successful download
+		'''		
+		pass
+	
 	def __exit__(self, exc_type, exc_value, tb) :
 		'''__exit__ Method called at the end of a `with ... as ...` block
 
@@ -224,7 +218,7 @@ class FilesArchiver(Archiver) :
 class ZipArchiver(Archiver) :
 	'''FilesArchiver `Archiver` that downloads pages in a zip file'''	
 
-	def __init__(self, downloader, chapter_id) :
+	def __init__(self, downloader, chapter_id, ext='zip') :
 		'''__init__ Method used to initialise the object
 
 		Creates a buffer for the zip file.
@@ -235,6 +229,7 @@ class ZipArchiver(Archiver) :
 		'''		
 		super().__init__(downloader, chapter_id)
 		self._buffer = io.BytesIO()
+		self._extension = ext
 
 	def __enter__(self) :
 		'''__enter__ Method called at the beginning of a `with ... as ...` block
@@ -270,39 +265,96 @@ class ZipArchiver(Archiver) :
 			return False
 		if self._npages != self._cpt :
 			logger.warning('Expected %d pages, got %d', self._npages, self._cpt)
-		filepath = os.path.join(self._destination, f"{self._filename}.zip")
+		filepath = os.path.join(self._destination, f"{self._filename}.{self._extension}")
 		with open(filepath, 'wb') as f :
 			f.write(self._buffer.getvalue())
 		self._buffer.close()
 
 
 @dl_method('cbz')
-class CbzArchiver(Archiver) : # TODO comicinfo.xml
+class CbzArchiver(ZipArchiver) :
+
+	def __init__(self, downloader, chapter_id):
+		super().__init__(downloader, chapter_id, 'cbz')
+
+
+@dl_method('cbz+comicinfo')
+class CbzComicinfoArchiver(CbzArchiver) :
 
 	def __init__(self, downloader, chapter_id) :
 		super().__init__(downloader, chapter_id)
-		self._buffer = io.BytesIO()
+		self._files_info = []
+	
+	def fullPageInfo(file: bytes) :
+		res = {
+			'ImageSize': len(file)
+		}
+		with Image.open(io.BytesIO(file)) as img :
+			res['ImageWidth'] = img.width
+			res['ImageHeight'] = img.height
+		return res
+	
+	def minimalPageInfo(file: bytes) :
+		return {
+			'ImageSize': len(file)
+		}
 
-	def __enter__(self) :
-		self._zipfile = zipfile.ZipFile(self._buffer, 'w')
-		return self
+	def getPageInfo(file: bytes) :
+		raise NotImplementedError
 
 	def processFile(self, file: bytes, name: str) :
-		self._zipfile.writestr(name, io.BytesIO(file).getvalue())
+		self._files_info.append(CbzComicinfoArchiver.getPageInfo(file))
+		super().processFile(file, name)
 
-	def __exit__(self, exc_type, exc_value, tb):
-		'''__exit__ Method called at the end of a `with ... as ...` block
+	def after(self) :
+		'''after Method executed at the end of a successful download
+		'''		
+		self._zipfile.writestr('ComicInfo.xml', createComicInfo(self._manga, self._chapter, self._files_info))
 
-		Saves the content of the zip file to the disc, then frees the zip object and the buffer.
-		'''
-		self._zipfile.close()
-		if exc_type is not None:
-			# traceback.print_exception(exc_type, exc_value, tb)
-			self._buffer.close()
-			return False
-		if self._npages != self._cpt :
-			logger.warning('Expected %d pages, got %d', self._npages, self._cpt)
-		filepath = os.path.join(self._destination, f"{self._filename}.zip")
-		with open(filepath, 'wb') as f :
-			f.write(self._buffer.getvalue())
-		self._buffer.close()
+CbzComicinfoArchiver.getPageInfo = CbzComicinfoArchiver.fullPageInfo if config.getApiConf('compression.cbz.additional_data') else CbzComicinfoArchiver.minimalPageInfo
+
+
+
+rating_mapping = {
+	'safe':         'Everyone', 
+	'suggestive':   'Everyone 10+', 
+	'erotica':      'Mature 17+', 
+	'pornographic': 'Adults Only 18+'
+}
+
+def createComicInfo(manga_info: dict, chapter_info: dict, images_info: list) :
+	root = etree.Element('ComicInfo')
+	etree.SubElement(root, 'Title').text = chapter_info['title']
+	etree.SubElement(root, 'Series').text = manga_info['title']
+	if chapter_info['volume'] is not None :
+		etree.SubElement(root, 'Number').text = str(chapter_info['volume'])
+	etree.SubElement(root, 'Volume').text = str(chapter_info['chapter'])
+	if manga_info['description'] is not None :
+		etree.SubElement(root, 'Summary').text = manga_info['description']
+	etree.SubElement(root, 'Notes').text = 'Generated by Nagato API'
+	for tag, dt_id in [('Year', 'year'), ('Month', 'month'), ('Day', 'day')] :
+		if chapter_info['date'][dt_id] is not None :
+			etree.SubElement(root, tag).text = chapter_info['date'][dt_id]
+	for tag, list_id in [('Writer', 'authors'), ('Penciller', 'artists')] :
+		if len(manga_info[list_id]) > 0 :
+			etree.SubElement(root, tag).text = ', '.join([a['name'] for a in manga_info[list_id]])
+	if chapter_info['team'] is not None :
+		etree.SubElement(root, 'Translator').text = chapter_info['team']['name']
+	for tag, list_id in [('Genre', 'genres'), ('Tags', 'tags')] :
+		if len(manga_info[list_id]) > 0 :
+			etree.SubElement(root, tag).text = ', '.join(manga_info[list_id])
+	etree.SubElement(root, 'PageCount').text = str(len(images_info))
+	etree.SubElement(root, 'LanguageISO').text = chapter_info['lang']
+	etree.SubElement(root, 'Manga').text = 'Yes'
+	if manga_info['rating'] is not None :
+		etree.SubElement(root, 'AgeRating').text = rating_mapping[manga_info['rating']]
+	pages = etree.SubElement(root, 'Pages')
+	for i, img_info in enumerate(images_info) :
+		page = etree.SubElement(pages, 'Page')
+		page.set('Image', str(i))
+		for attr, val in img_info.items() :
+			page.set(attr, str(val))
+	if len(images_info) > 0 :
+		pages[0].set('Type', 'FrontCover')
+	return etree.tostring(root, pretty_print=True, xml_declaration=True, encoding='utf-8')
+	

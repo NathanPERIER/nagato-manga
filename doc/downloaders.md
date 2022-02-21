@@ -60,6 +60,11 @@ class MyDownloader(BaseDownloader) :
 				'title': '', 
 				'lang': 'en', 
 				'pages': 1, 
+				'date': {
+					'day': None, 
+					'month': None, 
+					'year': None
+				},
 				'team': {
 					'id': '', 
 					'name': '', 
@@ -77,6 +82,11 @@ class MyDownloader(BaseDownloader) :
 			'title': '', 
 			'lang': 'en', 
 			'pages': 1, 
+			'date': {
+				'day': None, 
+				'month': None, 
+				'year': None
+			},
 			'team': {
 				'id': '', 
 				'name': '', 

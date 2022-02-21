@@ -6,7 +6,8 @@
 		"chapters.separate": true
 	},
 	"api": {
-		"requests.cache.maxlen": 50
+		"requests.cache.maxlen": 50,
+		"compression.cbz.additional_data": false
 	},
 	"downloaders": {
 		"mangadex.org": {
