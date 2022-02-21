@@ -184,7 +184,7 @@ class RequesterBuilder :
 		self._headers = {}
 		self._handlers = {}
 		self._connectionErrorHandler = None
-		self._timeout = (3.05, 5)
+		self._timeout = (config.getApiConf('requests.timeout.connect'), config.getApiConf('requests.timeout.read'))
 	
 	def get() :
 		return RequesterBuilder('GET')

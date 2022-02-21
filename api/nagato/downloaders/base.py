@@ -33,6 +33,7 @@ class BaseDownloader :
 			self.getDestinationFolder = self.destFolderSeparated
 		else :
 			self.getDestinationFolder = self.destFolderMixed
+		self._pagedelay = config['chapters.pagedelay']
 		
 
 	def getMangaId(self, url):
@@ -57,7 +58,7 @@ class BaseDownloader :
 		images, builder = self.getChapterUrls(chapter_id)
 		with builder.session() as requester :
 			for image_url in images :
-				archiver.addFile(requester.requestBinary(image_url, 0.1))
+				archiver.addFile(requester.requestBinary(image_url, delay=self._pagedelay))
 	
 	def getChapterUrls(self, chapter_id) -> "tuple[list[str], RequesterBuilder]" :
 		raise NotImplementedError

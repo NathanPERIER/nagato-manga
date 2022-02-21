@@ -3,10 +3,13 @@
 		"chapters.destination": "/data",
 		"chapters.format": "${manga} -.- C${chapter} ${title}",
 		"chapters.method": "cbz",
+		"chapters.pagedelay": 0,
 		"mangas.separate": true
 	},
 	"api": {
 		"requests.cache.maxlen": 50,
+		"requests.timeout.connect": 3.05,
+		"requests.timeout.read": 10,
 		"compression.cbz.additional_data": false
 	},
 	"downloaders": {
