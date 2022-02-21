@@ -5,7 +5,7 @@
 The API can be configured via a JSON [configuration file](../api/config/conf.json). It has three main sections that associate properties with values :
  - `api` for the general configuration of the api
  - `global` that sets default values for the properties used by all the downloaders
- - `downloaders` that has une sub-section for each downloader, identified by site
+ - `downloaders` that has one sub-section for each downloader, identified by site
 
 Additionaly, there is a [secondary configuration file](../api/config/env.json) that is structured just like the previous one but associates some properties with an environment variable. Note that all properties don't have to be associated with an environment variable.
 
