@@ -1,10 +1,12 @@
 from nagato.utils.sanitise import sanitiseNodeName
+from nagato.utils import config
 
 import io
 import os
 import zipfile
 import logging
 from lxml import etree
+from PIL import Image
 
 logger = logging.getLogger(__name__)
 
@@ -165,6 +167,11 @@ class Archiver :
 		'''		
 		raise NotImplementedError
 	
+	def after(self) :
+		'''after Method exectued at the end of a successful download
+		'''		
+		pass
+	
 	def __exit__(self, exc_type, exc_value, tb) :
 		'''__exit__ Method called at the end of a `with ... as ...` block
 
@@ -211,7 +218,7 @@ class FilesArchiver(Archiver) :
 class ZipArchiver(Archiver) :
 	'''FilesArchiver `Archiver` that downloads pages in a zip file'''	
 
-	def __init__(self, downloader, chapter_id) :
+	def __init__(self, downloader, chapter_id, ext='zip') :
 		'''__init__ Method used to initialise the object
 
 		Creates a buffer for the zip file.
@@ -222,6 +229,7 @@ class ZipArchiver(Archiver) :
 		'''		
 		super().__init__(downloader, chapter_id)
 		self._buffer = io.BytesIO()
+		self._extension = ext
 
 	def __enter__(self) :
 		'''__enter__ Method called at the beginning of a `with ... as ...` block
@@ -257,46 +265,53 @@ class ZipArchiver(Archiver) :
 			return False
 		if self._npages != self._cpt :
 			logger.warning('Expected %d pages, got %d', self._npages, self._cpt)
-		filepath = os.path.join(self._destination, f"{self._filename}.zip")
+		filepath = os.path.join(self._destination, f"{self._filename}.{self._extension}")
 		with open(filepath, 'wb') as f :
 			f.write(self._buffer.getvalue())
 		self._buffer.close()
 
 
 @dl_method('cbz')
-class CbzArchiver(Archiver) :
+class CbzArchiver(ZipArchiver) :
+
+	def __init__(self, downloader, chapter_id):
+		super().__init__(downloader, chapter_id, 'cbz')
+
+
+@dl_method('cbz+comicinfo')
+class CbzComicinfoArchiver(CbzArchiver) :
 
 	def __init__(self, downloader, chapter_id) :
 		super().__init__(downloader, chapter_id)
-		self._buffer = io.BytesIO()
 		self._files_info = []
+	
+	def fullPageInfo(file: bytes) :
+		res = {
+			'ImageSize': len(file)
+		}
+		with Image.open(io.BytesIO(file)) as img :
+			res['ImageWidth'] = img.width
+			res['ImageHeight'] = img.height
+		return res
+	
+	def minimalPageInfo(file: bytes) :
+		return {
+			'ImageSize': len(file)
+		}
 
-	def __enter__(self) :
-		self._zipfile = zipfile.ZipFile(self._buffer, 'w')
-		return self
+	def getPageInfo(file: bytes) :
+		raise NotImplementedError
 
 	def processFile(self, file: bytes, name: str) :
-		self._files_info.append({'ImageSize': len(file)}) # TODO get additional information, depending on the configuration
-		self._zipfile.writestr(name, io.BytesIO(file).getvalue())
+		self._files_info.append(CbzComicinfoArchiver.getPageInfo(file))
+		super().processFile(file, name)
 
-	def __exit__(self, exc_type, exc_value, tb):
-		'''__exit__ Method called at the end of a `with ... as ...` block
-
-		Saves the content of the zip file to the disc, then frees the zip object and the buffer.
-		'''
-		if exc_type is not None:
-			# traceback.print_exception(exc_type, exc_value, tb)
-			self._zipfile.close()
-			self._buffer.close()
-			return False
+	def after(self) :
+		'''after Method executed at the end of a successful download
+		'''		
 		self._zipfile.writestr('ComicInfo.xml', createComicInfo(self._manga, self._chapter, self._files_info))
-		self._zipfile.close()
-		if self._npages != self._cpt :
-			logger.warning('Expected %d pages, got %d', self._npages, self._cpt)
-		filepath = os.path.join(self._destination, f"{self._filename}.cbz")
-		with open(filepath, 'wb') as f :
-			f.write(self._buffer.getvalue())
-		self._buffer.close()
+
+CbzComicinfoArchiver.getPageInfo = CbzComicinfoArchiver.fullPageInfo if config.getApiConf('compression.cbz.additional_data') else CbzComicinfoArchiver.minimalPageInfo
 
 
 
