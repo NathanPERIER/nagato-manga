@@ -1,8 +1,7 @@
-from nagato.utils.compression import Archiver
 from nagato.downloaders import custom
 from nagato.downloaders.base import BaseDownloader
 from nagato.utils.errors import ApiUrlError, ApiNotFoundError
-from nagato.utils.request import Requester, RequesterBuilder
+from nagato.utils.request import RequesterBuilder
 
 import re
 from datetime import datetime, timezone
@@ -23,7 +22,8 @@ class MangadexDownloader(BaseDownloader) :
 	def __init__(self, config) :
 		super().__init__(config)
 		self._lang = config['language.filter']
-		self._requester = RequesterBuilder.get().build()
+		self._builder = RequesterBuilder.get()
+		self._requester = self._builder.build()
 
 	def getChapterId(self, url) :
 		m = chapter_page_reg.fullmatch(url)
@@ -171,10 +171,10 @@ class MangadexDownloader(BaseDownloader) :
 		chapter['manga'] = self._findRelationshipId(data['relationships'], 'manga')[1]
 		return chapter
 	
-	def getChapterUrls(self, chapter_id) -> "tuple[list[str], Requester]" :
+	def getChapterUrls(self, chapter_id) -> "tuple[list[str], RequesterBuilder]" :
 		data = self._requester.requestJson(f"{API_ATHOME_URL}/{chapter_id}")
 		base_url = data['baseUrl']
 		chapter = data['chapter']
 		hash = chapter['hash']
-		return [f"{base_url}/data/{hash}/{image}" for image in chapter['data']], self._requester
+		return [f"{base_url}/data/{hash}/{image}" for image in chapter['data']], self._builder
 
