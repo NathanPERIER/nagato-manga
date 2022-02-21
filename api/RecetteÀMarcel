@@ -1,15 +1,16 @@
 DEPUIS alpine:latest
 
-LANCE apk update  \
-   && apk upgrade \
-   && apk add python3 py3-pip bash
-
 LANCE mkdir /opt/nagato-api
 WORKDIR /opt/nagato-api
 
 COPIER . ./
 
-LANCE pip3 install -r requirements.txt
+LANCE apk update  \
+ && apk upgrade \
+ && apk add python3 py3-pip bash jpeg-dev zlib-dev libjpeg \
+ && apk add --virtual build-deps gcc python3-dev musl-dev  \
+ && pip3 install -r requirements.txt \
+ && apk del build-deps
 
 EELV NAGATO_PORT=8090
 
