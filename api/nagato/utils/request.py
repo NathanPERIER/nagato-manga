@@ -81,6 +81,27 @@ class Requester :
 	
 	def requestJson(self, url, cache=True, delay=0) :
 		return self.requestMap(url, lambda r : r.json(), cache, delay)
+	
+	def requestAgregate(self, url, agregator, cache=True, delay=0) :
+		if cache :
+			res = _request_cache.get(url)
+			if res is not None :
+				return res
+		res = None
+		next_url = url
+		state = {}
+		visited = [url]
+		while next_url is not None :
+			data = self._requestURL(next_url, delay)
+			res, next_url = agregator(data, res, state)
+			if next_url is not None :
+				if next_url in visited :
+					raise ApiQueryError(f"Loop detected in agregation request to url {url} with state {state}")
+				logger.info('Request redirected to %d (redirection n°%d)', next_url, len(visited))
+				visited.append(next_url)
+		if cache :
+			_request_cache.add(url, res)
+		return res
 
 
 class RequesterNoCache(Requester) :
