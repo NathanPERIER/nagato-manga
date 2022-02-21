@@ -17,6 +17,8 @@ You can also set the `NAGATO_API_HOST` and `NAGATO_API_PORT` indicating the host
 
 The `api` section contains the following attributes that are relevant to the general behaviour of the API :
  - `request.cache.maxlen`: the maximum HTTP requests that can be cached, this can be set to 0 to disable HTTP caching entirely but it is discouraged since certain requests may be repeated quite often. Defaults to `150`. The `NAGATO_CACHE_SIZE` environment variable can also be used.
+ - `requests.timeout.connect`: the default connection timeout in seconds for a request made by the API, defaults to `3.05`. It is best to set it to a value slightly higer than a multiple of 3, for more details see the documentation of the `requests` module on [timeouts].
+ - `requests.timeout.read`: the default timeout in seconds for a response to a request made by the API, defaults to `10`. For more details, see the documentation of the `requests` module on [timeouts].
  - `compression.cbz.additional_data`: a boolean indicating wether or not the API should spend more time (and resources) to infer metadata from the available data on a chapter and a manga for a cbz file with ComicInfo. This implies for example loading each image with [`PIL`](https://pillow.readthedocs.io/en/stable/) to get its dimensions. Defaults to `false`.
 
 ### Configuration of a downloader
@@ -26,6 +28,7 @@ The `global` section contains attributes that are common to all downloaders :
  - `mangas.separate`: boolean indicating if there should be a subfolder per manga where all the chapters of this manga are stored (`true`) or if all the chapters should be stored in the same folder (`false`). Defaults to `true`.
  - `chapters.method`: the method used to save chapters once they are downloaded, should be one of `file`, `zip`, `cbz` or `cbz+comicinfo` (see below for more details). Defaults to `cbz`. The `NAGATO_CACHE_SIZE` environment variable can also be used.
  - `chapters.format`: A template for a Python [Template String] that will define the name of the chapter when it is saved to the disk (the name of the cbz/zip file or the name of the folder, depending on the selected storing method). The placeholders that can be used are listed below. Defaults to `${manga} -.- C${chapter} ${title}`. The `NAGATO_DOWNLOAD_FORMAT` environment variable can also be used.
+ - `chapters.pagedelay`: The delay in seconds between the downloads of two pages of a chapter, defaults to `0`.
 
 A sub-section in the `downloaders` section can contain any of the attributes listed above, these values will override those in `global`. A custom attribute specific to a downloader can be defined in the corresponding sub-section, its value will then be accessible in the constructor of said downloader via the `config` argument. One can also bound an environment variable to the value of a custom attribute by adding an entry in the `env.conf` file.
 
@@ -52,6 +55,7 @@ The table below lists the placeholders that can be used in a chapter name templa
 \* Can be `None`
 
 
+[timeouts]: https://docs.python-requests.org/en/latest/user/advanced/#timeouts
 [Template String]: https://docs.python.org/3/library/string.html#template-strings
 [Comic Book Archive]: https://en.wikipedia.org/wiki/Comic_book_archive
 [ComicInfo.xml]: https://github.com/anansi-project/comicinfo
