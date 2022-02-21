@@ -3,7 +3,7 @@
 		"chapters.destination": "/data",
 		"chapters.format": "${manga} -.- C${chapter} ${title}",
 		"chapters.method": "cbz",
-		"chapters.separate": true
+		"mangas.separate": true
 	},
 	"api": {
 		"requests.cache.maxlen": 50,

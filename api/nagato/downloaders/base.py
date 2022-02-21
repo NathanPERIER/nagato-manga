@@ -29,7 +29,7 @@ class BaseDownloader :
 			raise ApiConfigurationError(f"Invalid template \"{config['chapters.format']}\" in class {type(self).__name__}")
 		except KeyError as e :
 			raise ApiConfigurationError(f"Template \"{config['chapters.format']}\" in class {type(self).__name__} contains the invalid placeholder \"{e}\"")
-		if config['chapters.separate'] :
+		if config['mangas.separate'] :
 			self.getDestinationFolder = self.destFolderSeparated
 		else :
 			self.getDestinationFolder = self.destFolderMixed

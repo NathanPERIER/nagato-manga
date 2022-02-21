@@ -23,7 +23,7 @@ The `api` section contains the following attributes that are relevant to the gen
 
 The `global` section contains attributes that are common to all downloaders : 
  - `chapters.destination`: the base directory where chapters will be saved, defaults to `/data`. The `NAGATO_DOWNLOAD_DIR` environment variable can also be used.
- - `chapters.separate`: boolean indicating if the chapters of a same manga should be grouped in a subfolder (`true`) or if all chapters should be stored in the same folder (`false`). Defaults to `true`.
+ - `mangas.separate`: boolean indicating if there should be a subfolder per manga where all the chapters of this manga are stored (`true`) or if all the chapters should be stored in the same folder (`false`). Defaults to `true`.
  - `chapters.method`: the method used to save chapters once they are downloaded, should be one of `file`, `zip`, `cbz` or `cbz+comicinfo` (see below for more details). Defaults to `cbz`. The `NAGATO_CACHE_SIZE` environment variable can also be used.
  - `chapters.format`: A template for a Python [Template String] that will define the name of the chapter when it is saved to the disk (the name of the cbz/zip file or the name of the folder, depending on the selected storing method). The placeholders that can be used are listed below. Defaults to `${manga} -.- C${chapter} ${title}`. The `NAGATO_DOWNLOAD_FORMAT` environment variable can also be used.
 
