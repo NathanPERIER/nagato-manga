@@ -44,5 +44,7 @@ If you want to deploy the API without Docker, you will need python >= 3.6 and pi
 $ git clone 'this repository'
 $ cd nagato-manga/api
 $ pip3 install -r requirements.txt # Only the first time or if missing dependencies after a pull
+$ mkdir config
+$ cp default-config/*.json config  # You should probably change the `chapters.destination` (at least)
 $ gunicorn --config default-config/gunicorn.conf.py nagato-api:app
 ```

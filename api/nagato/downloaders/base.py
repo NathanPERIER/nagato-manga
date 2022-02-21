@@ -1,5 +1,5 @@
 from string import Template
-from nagato.utils.request import Requester
+from nagato.utils.request import RequesterBuilder
 from nagato.utils.errors import ApiConfigurationError
 from nagato.utils.sanitise import sanitiseNodeName
 from nagato.utils.compression import Archiver, getArchiverForMethod
@@ -29,10 +29,11 @@ class BaseDownloader :
 			raise ApiConfigurationError(f"Invalid template \"{config['chapters.format']}\" in class {type(self).__name__}")
 		except KeyError as e :
 			raise ApiConfigurationError(f"Template \"{config['chapters.format']}\" in class {type(self).__name__} contains the invalid placeholder \"{e}\"")
-		if config['chapters.separate'] :
+		if config['mangas.separate'] :
 			self.getDestinationFolder = self.destFolderSeparated
 		else :
 			self.getDestinationFolder = self.destFolderMixed
+		self._pagedelay = config['chapters.pagedelay']
 		
 
 	def getMangaId(self, url):
@@ -54,11 +55,12 @@ class BaseDownloader :
 		return [ChapterDownload(self, chapter_id).submit() for chapter_id in ids]
 	
 	def downloadChapter(self, chapter_id, archiver: Archiver) :
-		images, requester = self.getChapterUrls(chapter_id)
-		for image_url in images :
-			archiver.addFile(requester.requestBinary(image_url, 0.1))
+		images, builder = self.getChapterUrls(chapter_id)
+		with builder.session() as requester :
+			for image_url in images :
+				archiver.addFile(requester.requestBinary(image_url, delay=self._pagedelay))
 	
-	def getChapterUrls(self, chapter_id) -> "tuple[list[str], Requester]" :
+	def getChapterUrls(self, chapter_id) -> "tuple[list[str], RequesterBuilder]" :
 		raise NotImplementedError
 
 	def getChapterInfo(self, chapter_id) :
