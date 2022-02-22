@@ -4,6 +4,7 @@ from nagato.utils.errors import ApiUrlError, ApiNotFoundError
 from nagato.utils.request import RequesterBuilder
 
 import re
+from requests import Response
 from datetime import datetime, timezone
 
 CDN_URL = 'https://uploads.mangadex.org'
@@ -146,23 +147,30 @@ class MangadexDownloader(BaseDownloader) :
 			}
 		}
 	
-	def _chaptersFromApiData(self, data, res={}) :
-		for chapter_data in data :
-			chapter_id, chapter = self._formatChapter(chapter_data)
-			res[chapter_id] = chapter
-		return res
+	def _chaptersFromApi(self, manga_id) :
+		first_url = f"{API_MANGA_URL}/{manga_id}/feed?translatedLanguage[]={self._lang}&includes[]=scanlation_group&offset=0"
+		def agregator(response: Response, prev_res, state: dict) -> tuple :
+			data = response.json()
+			if prev_res is None :
+				res = {}
+				state['limit'] = data['limit']
+				state['total'] = data['total']
+				state['nb_req'] = 1
+			else :
+				state['nb_req'] += 1
+				res = prev_res
+			for chapter_data in data['data'] :
+				chapter_id, chapter = self._formatChapter(chapter_data)
+				res[chapter_id] = chapter
+			next_url = None
+			if state['nb_req'] * state['limit'] < state['total'] :
+				next_url = f"{API_MANGA_URL}/{manga_id}/feed?translatedLanguage[]={self._lang}&includes[]=scanlation_group&offset={state['nb_req'] * state['limit']}"
+			return res, next_url
+		return first_url, agregator
 
 	def getChapters(self, manga_id) :
-		data = self._requester.requestJson(f"{API_MANGA_URL}/{manga_id}/feed?translatedLanguage[]={self._lang}&includes[]=scanlation_group&offset=0")
-		limit = data['limit']
-		total = data['total']
-		nb_req = 1
-		res = self._chaptersFromApiData(data['data'])
-		while nb_req * limit < total :
-			data = self._requester.requestJson(f"{API_MANGA_URL}/{manga_id}/feed?translatedLanguage[]={self._lang}&includes[]=scanlation_group&offset={nb_req * limit}")
-			self._chaptersFromApiData(data['data'], res)
-			nb_req += 1
-		return res
+		url, agregator = self._chaptersFromApi(manga_id)
+		return self._requester.requestAgregate(url, agregator)
 	
 	def getChapterInfo(self, chapter_id): 
 		data = self._requester.requestJson(f"{API_CHAPTER_URL}/{chapter_id}?includes[]=scanlation_group")['data']
