@@ -7,6 +7,7 @@
 		"mangas.separate": true
 	},
 	"api": {
+		"database.path": "nagato.db",
 		"requests.cache.maxlen": 50,
 		"requests.timeout.connect": 3.05,
 		"requests.timeout.read": 10,
