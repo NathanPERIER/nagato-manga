@@ -40,8 +40,8 @@ def getMangaFromArgs() -> "tuple[BaseDownloader,str]" :
 
 def mangaFromArgs(f) :
 	@wraps(f)
-	def wrapper(*args) :
-		return f(*getMangaFromArgs(), *args)
+	def wrapper(**kwargs) :
+		return f(*getMangaFromArgs(), **kwargs)
 	return wrapper
 
 def getChapterFromArgs() -> "tuple[BaseDownloader,str]" :
@@ -58,8 +58,8 @@ def getChapterFromArgs() -> "tuple[BaseDownloader,str]" :
 
 def chapterFromArgs(f) :
 	@wraps(f)
-	def wrapper(*args) :
-		return f(*getChapterFromArgs(), *args)
+	def wrapper(**kwargs) :
+		return f(*getChapterFromArgs(), **kwargs)
 	return wrapper
 
 def getChapterRefs(data) :
@@ -84,9 +84,9 @@ def getChapterRefs(data) :
 
 def chaptersFromContent(f) :
 	@wraps(f)
-	def wrapper(*args) :
+	def wrapper(**kwargs) :
 		data = request.get_json(silent=True)
 		if data is None :
 			raise ApiFormatError('Content of request is not well-formed JSON')
-		return f(getChapterRefs(data), *args)
+		return f(getChapterRefs(data), **kwargs)
 	return wrapper
