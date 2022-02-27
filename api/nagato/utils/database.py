@@ -92,7 +92,7 @@ class SqlChapterEntry :
 	
 	def getMark(self, cur: sqlite3.Cursor) :
 		l = cur.execute("SELECT mark FROM chapters WHERE site=? and id=?", [self._site, self._id]).fetchall()
-		return ChapterMark(l[0]) if len(l) > 0 else None
+		return ChapterMark(l[0][0]) if len(l) > 0 else None
 
 	def setMark(self, cur: sqlite3.Cursor, mark: ChapterMark) -> bool :
 		chapter_exists = self.exists(cur)
