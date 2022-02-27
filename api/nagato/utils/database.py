@@ -27,6 +27,12 @@ class SqlConnection :
 		if exc_type is not None :
 			return False
 
+
+class ChapterMark(Enum) :
+	DOWNLOADED = 'D'
+	IGNORED    = 'I'
+
+
 def getConnection() :
 	return SqlConnection(__database_path)
 
@@ -57,9 +63,9 @@ class SqlMangaEntry :
 		cur.execute("DELETE FROM mangas WHERE site=? and id=?", [self._site, self._id])
 		return True
 	
-	def getChaptersWithTags(self, cur: sqlite3.Cursor) -> "dict[str,str]" :
+	def getChaptersWithTags(self, cur: sqlite3.Cursor) -> "dict[str,ChapterMark]" :
 		l = cur.execute("SELECT id, mark FROM chapters WHERE site=? and manga=?", [self._site, self._id]).fetchall()
-		return {e[0]: e[1] for e in l}
+		return {e[0]: ChapterMark(e[1]) for e in l}
 	
 	def getAllStarred(cur: sqlite3.Cursor) -> "dict[str,list[str]]" :
 		l = cur.execute("SELECT site, id FROM mangas").fetchall()
@@ -70,11 +76,9 @@ class SqlMangaEntry :
 			else :
 				res[e[0]].append(e[1])
 		return res
-
-
-class ChapterMark(Enum) :
-	DOWNLOADED = 'D'
-	IGNORED    = 'I'
+	
+	def getStarredForSite(cur: sqlite3.Cursor, site: str) -> "list[str]" :
+		return cur.execute("SELECT id FROM mangas WHERE site=?", [site]).fetchall()
 
 class SqlChapterEntry :
 	
