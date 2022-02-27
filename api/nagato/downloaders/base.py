@@ -13,7 +13,8 @@ logger = logging.getLogger(__name__)
 
 class BaseDownloader :
 
-	def __init__(self, config) :
+	def __init__(self, site: str, config) :
+		self._site = site
 		self._archiver_class = getArchiverForMethod(config['chapters.method'])
 		self._destination = config['chapters.destination']
 		if not os.path.exists(self._destination) :
@@ -34,7 +35,10 @@ class BaseDownloader :
 		else :
 			self.getDestinationFolder = self.destFolderMixed
 		self._pagedelay = config['chapters.pagedelay']
-		
+	
+	
+	def getSite(self) -> str :
+		return self._site
 
 	def getMangaId(self, url):
 		raise NotImplementedError

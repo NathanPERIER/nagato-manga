@@ -20,8 +20,8 @@ chapter_page_reg = re.compile(r'https://mangadex\.org/chapter/([a-z0-9\-]+)(?:/[
 @custom.register(site='mangadex.org')
 class MangadexDownloader(BaseDownloader) :
 	
-	def __init__(self, config) :
-		super().__init__(config)
+	def __init__(self, site: str, config) :
+		super().__init__(site, config)
 		self._lang = config['language.filter']
 		self._builder = RequesterBuilder.get()
 		self._requester = self._builder.build()
