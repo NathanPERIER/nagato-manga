@@ -57,6 +57,16 @@ class SqlMangaEntry :
 	def getChaptersWithTags(self, cur: sqlite3.Cursor) -> "dict[str,str]" :
 		l = cur.execute("SELECT id, mark FROM chapters WHERE site=? and manga=?", [self._site, self._id]).fetchall()
 		return {e[0]: e[1] for e in l}
+	
+	def getAllStarred(cur: sqlite3.Cursor) -> "dict[str,list[str]]" :
+		l = cur.execute("SELECT site, id FROM mangas").fetchall()
+		res = {}
+		for e in l :
+			if e[0] not in res : 
+				res[e[0]] = [e[1]]
+			else :
+				res[e[0]].append(e[1])
+		return res
 
 
 class ChapterMark(Enum) :
