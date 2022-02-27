@@ -115,10 +115,7 @@ class BaseDownloader :
 				res[chapter_id] = mark.name if mark is not None else None
 		return res
 			
-	def setChapterTags(self, chapter_ids: "list[str]", tag: str) -> bool :
-		if tag not in ChapterMark :
-			raise ApiQueryError('Invalid tag %s', tag)
-		mark = ChapterMark[tag]
+	def setChapterTags(self, chapter_ids: "list[str]", mark: ChapterMark) -> bool :
 		res = False
 		with getConnection() as con :
 			cur = con.cursor()
