@@ -20,8 +20,8 @@ from nagato.downloaders.base import BaseDownloader
 @custom.register(site='example.com')
 class MyDownloader(BaseDownloader) :
 	
-	def __init__(self, config) :
-		super().__init__(config)
+	def __init__(self, site: str, config) :
+		super().__init__(site, config)
 
 	def getChapterId(self, url: str) -> str :
 		return ''
@@ -108,9 +108,9 @@ class MyDownloader(BaseDownloader) :
 The `@custom.register` decorator is necessary for the downloader to be registered by the API. The `site` provided will be used to match the beginning of a URL to determine which downloader should be used to process the URL. 
 
 
-### `__init__(self, config)`
+### `__init__(self, site, config)`
 
-The only thing required at the initilaisation stage is to call `super().__init__(config)` to set the configuration. You can also get custom configuration attributes here. For this, create an `example.com` (site of your downloader) section in the `downloaders` section of the configuration. Then, define a property with a name of your choosing in this newly created section. You will be able to get its value in the constructor using `config['name_of_your_property']. More details are available in the [configuration documentation](configuration.md). 
+The only thing required at the initilaisation stage is to call `super().__init__(site, config)` to set the configuration. You can also get custom configuration attributes here. For this, create an `example.com` (site of your downloader) section in the `downloaders` section of the configuration. Then, define a property with a name of your choosing in this newly created section. You will be able to get its value in the constructor using `config['name_of_your_property']. More details are available in the [configuration documentation](configuration.md). 
 
 ### `getChapterId(self, url)`
 
