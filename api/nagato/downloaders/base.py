@@ -115,7 +115,7 @@ class BaseDownloader :
 				res[chapter_id] = mark.name if mark is not None else None
 		return res
 			
-	def setChapterTag(self, chapter_ids: "list[str]", tag: str) -> bool :
+	def setChapterTags(self, chapter_ids: "list[str]", tag: str) -> bool :
 		if tag not in ChapterMark :
 			raise ApiQueryError('Invalid tag %s', tag)
 		mark = ChapterMark[tag]
@@ -127,3 +127,22 @@ class BaseDownloader :
 				res = entry.setMark(cur, mark) or res
 			con.commit()
 		return res
+	
+	def isMangaStarred(self, manga_id) :
+		with getConnection() as con :
+			cur = con.cursor()
+			entry = SqlMangaEntry(self._site, manga_id)
+			return entry.isStarred(cur)
+
+	def setMangaStar(self, manga_id, star: bool) :
+		with getConnection() as con :
+			cur = con.cursor()
+			entry = SqlMangaEntry(self._site, manga_id)
+			return entry.star(cur) if star else entry.unstar(cur)
+	
+	def getChaptersTagsForManga(self, manga_id) :
+		with getConnection() as con :
+			cur = con.cursor()
+			entry = SqlMangaEntry(self._site, manga_id)
+			res = entry.getChaptersWithTags(cur)
+		return {a: b.name for a, b in res.items()}
