@@ -1,11 +1,11 @@
 from nagato.downloaders import downloaderForSite, downloaderForURL, siteForURL
 from nagato.downloaders.base import BaseDownloader
 from nagato.utils.compression import binary_patterns
-from nagato.utils.errors import ApiFormatError
+from nagato.utils.errors import ApiFormatError, ApiQueryError
 
 import logging
 from functools import wraps
-from flask import Response, request
+from flask import Response, request, Request
 
 logger = logging.getLogger(__name__)
 
@@ -26,34 +26,40 @@ def imageMimeType(image: bytes) :
 	logger.warning(f"Could not determine the type of an image with binary prefix {image[:10]}")
 
 
+def getMangaFromArgs() -> "tuple[BaseDownloader,str]" :
+	if 'url' in request.args :
+		url = request.args['url']
+		dl = downloaderForURL(url)
+		manga_id = dl.getMangaId(url)
+	elif 'site' in request.args and 'id' in request.args :
+		dl = downloaderForSite(request.args['site'])
+		manga_id = request.args['id']
+	else :
+		raise ApiQueryError('Request is missing the URL parameter or the Site and ID parameters')
+	return dl, manga_id
+
 def mangaFromArgs(f) :
 	@wraps(f)
-	def wrapper() :
-		if 'url' in request.args :
-			url = request.args['url']
-			dl = downloaderForURL(url)
-			manga_id = dl.getMangaId(url)
-			return f(dl, manga_id)
-		elif 'site' in request.args and 'id' in request.args :
-			dl = downloaderForSite(request.args['site'])
-			manga_id = request.args['id']
-			return f(dl, manga_id)
-		return Response('Request is missing the URL parameter or the Site and ID parameters', 400)
+	def wrapper(*args) :
+		return f(*getMangaFromArgs(), *args)
 	return wrapper
+
+def getChapterFromArgs() -> "tuple[BaseDownloader,str]" :
+	if 'url' in request.args :
+		url = request.args['url']
+		dl = downloaderForURL(url)
+		chapter_id = dl.getChapterId(url)
+	elif 'site' in request.args and 'id' in request.args :
+		dl = downloaderForSite(request.args['site'])
+		chapter_id = request.args['id']
+	else :
+		raise ApiQueryError('Request is missing the URL parameter or the Site and ID parameters')
+	return dl, chapter_id
 
 def chapterFromArgs(f) :
 	@wraps(f)
-	def wrapper() :
-		if 'url' in request.args :
-			url = request.args['url']
-			dl = downloaderForURL(url)
-			chapter_id = dl.getChapterId(url)
-			return f(dl, chapter_id)
-		elif 'site' in request.args and 'id' in request.args :
-			dl = downloaderForSite(request.args['site'])
-			chapter_id = request.args['id']
-			return f(dl, chapter_id)
-		return Response('Request is missing the URL parameter or the Site and ID parameters', 400)
+	def wrapper(*args) :
+		return f(*getChapterFromArgs(), *args)
 	return wrapper
 
 def getChapterRefs(data) :
@@ -78,9 +84,9 @@ def getChapterRefs(data) :
 
 def chaptersFromContent(f) :
 	@wraps(f)
-	def wrapper() :
+	def wrapper(*args) :
 		data = request.get_json(silent=True)
 		if data is None :
 			raise ApiFormatError('Content of request is not well-formed JSON')
-		return f(getChapterRefs(data))
+		return f(getChapterRefs(data), *args)
 	return wrapper
