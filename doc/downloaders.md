@@ -94,6 +94,10 @@ class MyDownloader(BaseDownloader) :
 			}
 		}
 	
+	def getMangaForChapter(self, chapter_id: str) -> str :
+		# This is the default implementation, override if possible
+		return self.getChapterInfo(chapter_id)['manga']
+	
 	def getChapterUrls(self, chapter_id: str) -> "tuple[list[str], Requester]" :
 		return self._requester.requestJson(f"https://exmple.com/api/pages/{chapter_id}")
 
@@ -135,6 +139,10 @@ Retrieves the list of chapters in the manga associated with the identifier. The 
 ### `getChapterInfo(self, chapter_id)`
 
 Retrives information on the chapter associated with the identfier. The data returned is stored in a `dict`, formatted as described [here](api-doc.md#get-apichapterinfo).
+
+### `getMangaForChapter(self, chapter_id)`
+
+Retrieves the identifier of the manga to which the specified chapter belongs. By default, this calls the `getChapterInfo` method and retrieves the `manga` field, which is sub-optimal. It is advised to override this method if there exists a more optimised way of getting this information. In case this method is not overriden, **do not** use it in `getChapterInfo` as it would create an infinite loop, quickly crashing the program (stack overflow error).
 
 ### `getChapterUrls(self, chapter_id)`
 

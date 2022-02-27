@@ -1,12 +1,14 @@
-from string import Template
+
 from nagato.utils.request import RequesterBuilder
-from nagato.utils.errors import ApiConfigurationError
+from nagato.utils.errors import ApiConfigurationError, ApiQueryError
 from nagato.utils.sanitise import sanitiseNodeName
 from nagato.utils.compression import Archiver, getArchiverForMethod
 from nagato.utils.threads import ChapterDownload
+from nagato.utils.database import getConnection, SqlChapterEntry, SqlMangaEntry, ChapterMark
 
 import os
 import logging
+from string import Template
 
 logger = logging.getLogger(__name__)
 
@@ -40,13 +42,16 @@ class BaseDownloader :
 	def getSite(self) -> str :
 		return self._site
 
-	def getMangaId(self, url):
+	def getMangaId(self, url) :
 		raise NotImplementedError
 	
-	def getChapterId(self, url):
+	def getChapterId(self, url) :
 		raise NotImplementedError
+	
+	def getMangaForChapter(self, chapter_id) :
+		return self.getChapterInfo(chapter_id)['manga']
 
-	def getMangaInfo(self, manga_id):
+	def getMangaInfo(self, manga_id) :
 		raise NotImplementedError
 	
 	def getCover(self, manga_id) :
@@ -85,7 +90,7 @@ class BaseDownloader :
 			'team': chapter_info['team']['name'] if chapter_info['team'] is not None else None
 		}
 
-	def getFilename(self, format_info) : # TODO format with a format string
+	def getFilename(self, format_info) :
 		return self._format.substitute(format_info)
 
 	def getDestinationFolder(self, format_info) :
@@ -99,3 +104,26 @@ class BaseDownloader :
 	
 	def destFolderMixed(self, format_info) :
 		return self._destination
+	
+	def getChapterTags(self, chapter_ids: str) :
+		res = {}
+		with getConnection() as con :
+			cur = con.cursor()
+			for chapter_id in chapter_ids :
+				entry = SqlChapterEntry(self._site, chapter_id, self)
+				mark = entry.getMark(cur)
+				res[chapter_id] = mark.name if mark is not None else None
+		return res
+			
+	def setChapterTag(self, chapter_ids: "list[str]", tag: str) -> bool :
+		if tag not in ChapterMark :
+			raise ApiQueryError('Invalid tag %s', tag)
+		mark = ChapterMark[tag]
+		res = False
+		with getConnection() as con :
+			cur = con.cursor()
+			for chapter_id in chapter_ids :
+				entry = SqlChapterEntry(self._site, chapter_id, self)
+				res = entry.setMark(cur, mark) or res
+			con.commit()
+		return res

@@ -47,7 +47,7 @@ class MangadexDownloader(BaseDownloader) :
 	def _findRelationships(self, relationships, type) :
 		return {elt['id']: elt['attributes'] for elt in relationships if elt['type'] == type}
 
-	def _getMangaForChapter(self, chapter_id) :
+	def getMangaForChapter(self, chapter_id) :
 		data = self._requester.requestJson(f"{API_CHAPTER_URL}/{chapter_id}")['data']
 		found, res = self._findRelationshipId(data['relationships'], 'manga')
 		if found :
@@ -60,7 +60,7 @@ class MangadexDownloader(BaseDownloader) :
 			return m.group(1)
 		try:
 			chapter_id = self.getChapterId(url)
-			return self._getMangaForChapter(chapter_id)
+			return self.getMangaForChapter(chapter_id)
 		except ApiUrlError or ApiNotFoundError :
 			raise ApiUrlError(f"URL {url} does not link to any manga nor chapter on the Mangadex website")
 
