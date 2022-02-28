@@ -5,7 +5,7 @@ from nagato.utils.errors import ApiFormatError, ApiQueryError
 
 import logging
 from functools import wraps
-from flask import Response, request, Request
+from flask import request
 
 logger = logging.getLogger(__name__)
 
