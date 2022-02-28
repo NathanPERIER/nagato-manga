@@ -251,6 +251,7 @@ Request is missing the URL parameter
 
 Retrieves some general information on a manga. The result is a JSON object with the following attributes :
  - `id`: the identifier of this manga
+ - `site`: the site on which this manga is published
  - `title`: the title of the manga
  - `alt_titles`: a list of objects that have a unique key being a language, associated with a title in this language
  - `description`: the description of the manga\*
