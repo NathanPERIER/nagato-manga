@@ -198,3 +198,15 @@ def deleteChaptersTag(data: dict) :
 		dl: BaseDownloader = site_data['downloader']
 		dl.setChapterTags(site_data['chapters'], None)
 	return Response(status=200)
+
+@app.route('/api/manga/fav', methods=['GET'])
+@params.mangaFromArgs
+def getMangaFav(dl: BaseDownloader, manga_id) :
+	res = dl.isMangaStarred(manga_id)
+	return Response(json.dumps(res), 200, content_type='application/json')
+
+@app.route('/api/manga/fav', methods=['PUT', 'DELETE'])
+@params.mangaFromArgs
+def changeMangaFav(dl: BaseDownloader, manga_id) :
+	res = dl.setMangaStar(manga_id, request.method == 'PUT')
+	return Response(status=201 if res and request.method == 'PUT' else 200)
