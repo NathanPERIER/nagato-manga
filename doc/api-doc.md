@@ -19,6 +19,14 @@ This file lists the available endpoints for the API.
 - [`POST /api/cancel/download/<id>`](#post-apicanceldownloadid)
 - [`POST /api/cancel/downloads`](#post-apicanceldownloads)
 - [`DELETE /api/downloads/history`](#delete-apidownloadshistory)
+- [`GET /api/chapter/tag`](#get-apichaptertag)
+- [`PUT /api/chapter/tag/<tag>`](#put-apichaptertagtag)
+- [`PUT /api/chapters/tag/<tag>`](#put-apichapterstagtag)
+- [`DELETE /api/chapter/tag`](#delete-apichaptertag)
+- [`DELETE /api/chapters/tag`](#delete-apichapterstag)
+- [`GET /api/manga/fav`](#get-apimangafav)
+- [`PUT /api/manga/fav`](#put-apimangafav)
+- [`DELETE /api/manga/fav`](#delete-apimangafav)
 
 ## `GET /api/ping`
 
@@ -490,7 +498,7 @@ curl -X POST 'localhost:8090/api/download/chapter?url=https://mangadex.org/chapt
 ### Example response
 
 ```
-HTTP/1.1 200 OK
+HTTP/1.1 202 ACCEPTED
 Content-Type: application/json
 
 "yfu7Rf1Xe3UHjwDoA5fp7DxA0jYstHWn"
@@ -520,7 +528,7 @@ curl --header "Content-Type: application/json" -d '{"urls": ["https://mangadex.o
 ### Example responses
 
 ```
-HTTP/1.1 200 OK
+HTTP/1.1 202 ACCEPTED
 Content-Type: application/json
 
 ["yfu7Rf1Xe3UHjwDoA5fp7DxA0jYstHWn", "PGUiBStCng-vty0nSduNHegMunyIMWnN", "h2h2UQA_O05AMkkbZJs7mouXd3G5gQ1S"]
@@ -821,6 +829,266 @@ Content-Type: application/json
 ```
 
 [`^ Back to top ^`][top]
+
+
+## `GET /api/chapter/tag`
+
+Retrieves the tag of a chapter, if any. A chapter can be tagged with `DOWNLOADED` or `IGNORED`.
+
+### Request parameters
+
+- `url`: The URL of a page on the website
+- `site`: The site for this resource
+- `id`: the identifier of this resource on the site
+
+**Note** : It is mandatory to set a value for either `url` or `site` and `id` for this request to succeed.
+
+### Example request
+
+```Bash
+curl -X GET 'localhost:8090/api/chapter/tag?url=https://mangadex.org/chapter/ec562f76-4654-4621-8198-247622955fdd/1'
+```
+
+### Example responses
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+"DOWNLOADED"
+```
+
+If the chapter is not tagged :
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+null
+```
+
+[`^ Back to top ^`][top]
+
+
+## `PUT /api/chapter/tag/<tag>`
+
+Sets the tag of a chapter to the one specified in the URL, either `DOWNLOADED` or `IGNORED`.
+
+### Request parameters
+
+- `url`: The URL of a page on the website
+- `site`: The site for this resource
+- `id`: the identifier of this resource on the site
+
+**Note** : It is mandatory to set a value for either `url` or `site` and `id` for this request to succeed.
+
+### Example request
+
+```Bash
+curl -X PUT 'localhost:8090/api/chapter/tag/DOWNLOADED?url=https://mangadex.org/chapter/ec562f76-4654-4621-8198-247622955fdd/1'
+```
+
+### Example response
+
+```
+HTTP/1.1 201 CREATED
+```
+
+[`^ Back to top ^`][top]
+
+
+## `PUT /api/chapters/tag/<tag>`
+
+Sets the tag of one or several chapters to the one specified in the URL, either `DOWNLOADED` or `IGNORED`.
+
+### Request content
+
+The body of the request must be a json object that can have two fields :
+ - `urls`: a list of URLs of chapters to download, potentially on several sites.
+ - `sites`: an object where the keys are site names and the values are lists of chapter identifiers
+
+*Note : if one field is associated to an empty list/object, you don't need to specify it*
+
+### Example request
+
+```Bash
+curl --header "Content-Type: application/json" -d '{"urls": ["https://mangadex.org/chapter/ec562f76-4654-4621-8198-247622955fdd/1"], "sites": {"mangadex.org": ["75011fda-0eec-4617-a677-e4eb8bb8f55b", "8a82dbff-60a2-4131-83c7-b42df0f7864d"]}}' -X PUT 'localhost:8090/api/chapters/tag/DOWNLOADED'
+```
+
+### Example responses
+
+```
+HTTP/1.1 201 CREATED
+```
+
+If the content type is not `application/json` or the json is invalid :
+```
+HTTP/1.1 400 BAD REQUEST
+
+Content of request is not well-formed JSON
+```
+
+[`^ Back to top ^`][top]
+
+
+## `DELETE /api/chapter/tag`
+
+Removes the tag of a chapter, if it has one.
+
+### Request parameters
+
+- `url`: The URL of a page on the website
+- `site`: The site for this resource
+- `id`: the identifier of this resource on the site
+
+**Note** : It is mandatory to set a value for either `url` or `site` and `id` for this request to succeed.
+
+### Example request
+
+```Bash
+curl -X DELETE 'localhost:8090/api/chapter/tag?url=https://mangadex.org/chapter/ec562f76-4654-4621-8198-247622955fdd/1'
+```
+
+### Example response
+
+```
+HTTP/1.1 200 OK
+```
+
+[`^ Back to top ^`][top]
+
+
+## `DELETE /api/chapters/tag`
+
+Removes the tags of one or several chapters, for those who have one.
+
+### Request content
+
+The body of the request must be a json object that can have two fields :
+ - `urls`: a list of URLs of chapters to download, potentially on several sites.
+ - `sites`: an object where the keys are site names and the values are lists of chapter identifiers
+
+*Note : if one field is associated to an empty list/object, you don't need to specify it*
+
+### Example request
+
+```Bash
+curl --header "Content-Type: application/json" -d '{"urls": ["https://mangadex.org/chapter/ec562f76-4654-4621-8198-247622955fdd/1"], "sites": {"mangadex.org": ["75011fda-0eec-4617-a677-e4eb8bb8f55b", "8a82dbff-60a2-4131-83c7-b42df0f7864d"]}}' -X DELETE 'localhost:8090/api/chapters/tag'
+```
+
+### Example responses
+
+```
+HTTP/1.1 200 OK
+```
+
+If the content type is not `application/json` or the json is invalid :
+```
+HTTP/1.1 400 BAD REQUEST
+
+Content of request is not well-formed JSON
+```
+
+[`^ Back to top ^`][top]
+
+
+## `GET /api/manga/fav`
+
+Retrieves a boolean indicating if a manga is set as a favourite or not.
+
+### Request parameters
+
+- `url`: The URL of a page on the website
+- `site`: The site for this resource
+- `id`: the identifier of this resource on the site
+
+**Note** : It is mandatory to set a value for either `url` or `site` and `id` for this request to succeed.
+
+### Example request
+
+```Bash
+curl -X GET 'localhost:8090/api/manga/fav?url=https://mangadex.org/title/cfc3d743-bd89-48e2-991f-63e680cc4edf/dr-stone'
+```
+
+### Example response
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+True
+```
+
+[`^ Back to top ^`][top]
+
+
+## `GET /api/manga/favs`
+
+[`^ Back to top ^`][top]
+
+
+## `PUT /api/manga/fav`
+
+Adds a manga to the list of favourites.
+
+### Request parameters
+
+- `url`: The URL of a page on the website
+- `site`: The site for this resource
+- `id`: the identifier of this resource on the site
+
+**Note** : It is mandatory to set a value for either `url` or `site` and `id` for this request to succeed.
+
+### Example request
+
+```Bash
+curl -X PUT 'localhost:8090/api/manga/fav?url=https://mangadex.org/title/cfc3d743-bd89-48e2-991f-63e680cc4edf/dr-stone'
+```
+
+### Example responses
+
+If the manga was successfully added :
+```
+HTTP/1.1 201 CREATED
+```
+
+If the manga was already a favourite :
+```
+HTTP/1.1 200 OK
+```
+
+[`^ Back to top ^`][top]
+
+
+## `DELETE /api/manga/fav`
+
+Removes a manga to the list of favourites.
+
+### Request parameters
+
+- `url`: The URL of a page on the website
+- `site`: The site for this resource
+- `id`: the identifier of this resource on the site
+
+**Note** : It is mandatory to set a value for either `url` or `site` and `id` for this request to succeed.
+
+### Example request
+
+```Bash
+curl -X DELETE 'localhost:8090/api/manga/fav?url=https://mangadex.org/title/cfc3d743-bd89-48e2-991f-63e680cc4edf/dr-stone'
+```
+
+### Example response
+
+```
+HTTP/1.1 200 OK
+```
+
+[`^ Back to top ^`][top]
+
+
+## `POST /api/download/chapters/new`
+
+## `POST /api/download/chapters/allnew`
 
 
 [top]: #nagato-api

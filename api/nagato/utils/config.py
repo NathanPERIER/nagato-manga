@@ -4,7 +4,9 @@ import json
 from nagato.utils.errors import ApiConfigurationError
 
 __this_dir = os.path.dirname(os.path.realpath(__file__))
-__conf_dir = os.path.join(os.path.dirname(os.path.dirname(__this_dir)), 'config')
+API_DIR = os.path.dirname(os.path.dirname(__this_dir))
+
+__conf_dir = os.path.join(API_DIR, 'config')
 __conf_file = os.path.join(__conf_dir, 'conf.json')
 __env_conf_file = os.path.join(__conf_dir, 'env.json')
 

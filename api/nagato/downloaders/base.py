@@ -1,19 +1,22 @@
-from string import Template
+
 from nagato.utils.request import RequesterBuilder
 from nagato.utils.errors import ApiConfigurationError
 from nagato.utils.sanitise import sanitiseNodeName
 from nagato.utils.compression import Archiver, getArchiverForMethod
 from nagato.utils.threads import ChapterDownload
+from nagato.utils.database import getConnection, SqlChapterEntry, SqlMangaEntry, ChapterMark
 
 import os
 import logging
+from string import Template
 
 logger = logging.getLogger(__name__)
 
 
 class BaseDownloader :
 
-	def __init__(self, config) :
+	def __init__(self, site: str, config) :
+		self._site = site
 		self._archiver_class = getArchiverForMethod(config['chapters.method'])
 		self._destination = config['chapters.destination']
 		if not os.path.exists(self._destination) :
@@ -34,15 +37,21 @@ class BaseDownloader :
 		else :
 			self.getDestinationFolder = self.destFolderMixed
 		self._pagedelay = config['chapters.pagedelay']
-		
+	
+	
+	def getSite(self) -> str :
+		return self._site
 
-	def getMangaId(self, url):
+	def getMangaId(self, url) :
 		raise NotImplementedError
 	
-	def getChapterId(self, url):
+	def getChapterId(self, url) :
 		raise NotImplementedError
+	
+	def getMangaForChapter(self, chapter_id) :
+		return self.getChapterInfo(chapter_id)['manga']
 
-	def getMangaInfo(self, manga_id):
+	def getMangaInfo(self, manga_id) :
 		raise NotImplementedError
 	
 	def getCover(self, manga_id) :
@@ -81,7 +90,7 @@ class BaseDownloader :
 			'team': chapter_info['team']['name'] if chapter_info['team'] is not None else None
 		}
 
-	def getFilename(self, format_info) : # TODO format with a format string
+	def getFilename(self, format_info) :
 		return self._format.substitute(format_info)
 
 	def getDestinationFolder(self, format_info) :
@@ -95,3 +104,44 @@ class BaseDownloader :
 	
 	def destFolderMixed(self, format_info) :
 		return self._destination
+	
+	def getChapterTags(self, chapter_ids: str) :
+		res = {}
+		with getConnection() as con :
+			cur = con.cursor()
+			for chapter_id in chapter_ids :
+				entry = SqlChapterEntry(self._site, chapter_id, self)
+				mark = entry.getMark(cur)
+				res[chapter_id] = mark.name if mark is not None else None
+		return res
+			
+	def setChapterTags(self, chapter_ids: "list[str]", mark: ChapterMark) -> bool :
+		res = False
+		with getConnection() as con :
+			cur = con.cursor()
+			for chapter_id in chapter_ids :
+				entry = SqlChapterEntry(self._site, chapter_id, self)
+				res = entry.setMark(cur, mark) or res
+			con.commit()
+		return res
+	
+	def isMangaStarred(self, manga_id) :
+		with getConnection() as con :
+			cur = con.cursor()
+			entry = SqlMangaEntry(self._site, manga_id)
+			return entry.isStarred(cur)
+
+	def setMangaStar(self, manga_id, star: bool) :
+		with getConnection() as con :
+			cur = con.cursor()
+			entry = SqlMangaEntry(self._site, manga_id)
+			res = entry.star(cur) if star else entry.unstar(cur)
+			con.commit()
+		return res
+	
+	def getChaptersTagsForManga(self, manga_id) :
+		with getConnection() as con :
+			cur = con.cursor()
+			entry = SqlMangaEntry(self._site, manga_id)
+			res = entry.getChaptersWithTags(cur)
+		return {a: b.name for a, b in res.items()}

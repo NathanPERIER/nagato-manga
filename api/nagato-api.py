@@ -6,7 +6,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(me
 
 from nagato.downloaders.base import BaseDownloader
 from nagato.downloaders import listSites, siteForURL, downloaderForURL
-from nagato.utils import errors, params, threads
+from nagato.utils import errors, params, threads, database
 
 import json
 import base64
@@ -104,18 +104,18 @@ def getMangaChapters(dl: BaseDownloader, manga_id) :
 
 @app.route('/api/download/chapter', methods=['POST'])
 @params.chapterFromArgs
-def postChapterDownloadParam(dl: BaseDownloader, chapter_id) :
+def postChapterDownload(dl: BaseDownloader, chapter_id) :
 	res = dl.downloadChapters([chapter_id])[0]
-	return Response(json.dumps(res), 200, content_type='application/json')
+	return Response(json.dumps(res), 202, content_type='application/json')
 
 @app.route('/api/download/chapters', methods=['POST'])
 @params.chaptersFromContent
-def postChaptersDownloadBody(data: dict) :
+def postChaptersDownload(data: dict) :
 	res = []
 	for site_data in data.values() :
 		dl: BaseDownloader = site_data['downloader']
 		res.extend(dl.downloadChapters(site_data['chapters']))
-	return Response(json.dumps(res), 200, content_type='application/json')
+	return Response(json.dumps(res), 202, content_type='application/json')
 
 @app.route('/api/dl_state/<dl_id>', methods=['GET'])
 def getDownloadState(dl_id) :
@@ -155,3 +155,58 @@ def deleteDownloadsHistory() :
 	return {
 		'deleted': threads.clearHistory()
 	}
+
+@app.route('/api/chapter/tag', methods=['GET'])
+@params.chapterFromArgs
+def getChapterTag(dl: BaseDownloader, chapter_id) :
+	res = dl.getChapterTags([chapter_id])[chapter_id]
+	return Response(json.dumps(res), 200, content_type='application/json')
+
+@app.route('/api/chapter/tag/<tag>', methods=['PUT'])
+@params.chapterFromArgs
+def putChapterTag(dl: BaseDownloader, chapter_id, tag: str) :
+	try :
+		mark = database.ChapterMark[tag]
+	except KeyError :
+		raise errors.ApiQueryError(f"Invalid tag: {tag}")
+	res = dl.setChapterTags([chapter_id], mark)
+	return Response(status=201 if res else 200)
+
+@app.route('/api/chapters/tag/<tag>', methods=['PUT'])
+@params.chaptersFromContent
+def putChaptersTag(data: dict, tag: str) :
+	try :
+		mark = database.ChapterMark[tag]
+	except KeyError :
+		raise errors.ApiQueryError(f"Invalid tag: {tag}")
+	res = False
+	for site_data in data.values() :
+		dl: BaseDownloader = site_data['downloader']
+		res = dl.setChapterTags(site_data['chapters'], mark) or res
+	return Response(status=201 if res else 200)
+
+@app.route('/api/chapter/tag', methods=['DELETE'])
+@params.chapterFromArgs
+def deleteChapterTag(dl: BaseDownloader, chapter_id) :
+	dl.setChapterTags([chapter_id], None)
+	return Response(status=200)
+
+@app.route('/api/chapters/tag', methods=['DELETE'])
+@params.chaptersFromContent
+def deleteChaptersTag(data: dict) :
+	for site_data in data.values() :
+		dl: BaseDownloader = site_data['downloader']
+		dl.setChapterTags(site_data['chapters'], None)
+	return Response(status=200)
+
+@app.route('/api/manga/fav', methods=['GET'])
+@params.mangaFromArgs
+def getMangaFav(dl: BaseDownloader, manga_id) :
+	res = dl.isMangaStarred(manga_id)
+	return Response(json.dumps(res), 200, content_type='application/json')
+
+@app.route('/api/manga/fav', methods=['PUT', 'DELETE'])
+@params.mangaFromArgs
+def changeMangaFav(dl: BaseDownloader, manga_id) :
+	res = dl.setMangaStar(manga_id, request.method == 'PUT')
+	return Response(status=201 if res and request.method == 'PUT' else 200)

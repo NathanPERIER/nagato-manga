@@ -10,7 +10,7 @@ available_downloaders = {}
 
 def instanciate_downloaders() :
 	for site, downloader_class in sorted(custom_downloaders.items(), key = lambda e : len(e[0]), reverse=True) :
-		available_downloaders[site] = downloader_class(DownloaderConf.forSite(site))
+		available_downloaders[site] = downloader_class(site, DownloaderConf.forSite(site))
 
 
 def listSites() :

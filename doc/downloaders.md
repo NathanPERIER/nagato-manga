@@ -20,8 +20,8 @@ from nagato.downloaders.base import BaseDownloader
 @custom.register(site='example.com')
 class MyDownloader(BaseDownloader) :
 	
-	def __init__(self, config) :
-		super().__init__(config)
+	def __init__(self, site: str, config) :
+		super().__init__(site, config)
 
 	def getChapterId(self, url: str) -> str :
 		return ''
@@ -94,6 +94,10 @@ class MyDownloader(BaseDownloader) :
 			}
 		}
 	
+	def getMangaForChapter(self, chapter_id: str) -> str :
+		# This is the default implementation, override if possible
+		return self.getChapterInfo(chapter_id)['manga']
+	
 	def getChapterUrls(self, chapter_id: str) -> "tuple[list[str], Requester]" :
 		return self._requester.requestJson(f"https://exmple.com/api/pages/{chapter_id}")
 
@@ -108,9 +112,9 @@ class MyDownloader(BaseDownloader) :
 The `@custom.register` decorator is necessary for the downloader to be registered by the API. The `site` provided will be used to match the beginning of a URL to determine which downloader should be used to process the URL. 
 
 
-### `__init__(self, config)`
+### `__init__(self, site, config)`
 
-The only thing required at the initilaisation stage is to call `super().__init__(config)` to set the configuration. You can also get custom configuration attributes here. For this, create an `example.com` (site of your downloader) section in the `downloaders` section of the configuration. Then, define a property with a name of your choosing in this newly created section. You will be able to get its value in the constructor using `config['name_of_your_property']. More details are available in the [configuration documentation](configuration.md). 
+The only thing required at the initilaisation stage is to call `super().__init__(site, config)` to set the configuration. You can also get custom configuration attributes here. For this, create an `example.com` (site of your downloader) section in the `downloaders` section of the configuration. Then, define a property with a name of your choosing in this newly created section. You will be able to get its value in the constructor using `config['name_of_your_property']. More details are available in the [configuration documentation](configuration.md). 
 
 ### `getChapterId(self, url)`
 
@@ -135,6 +139,10 @@ Retrieves the list of chapters in the manga associated with the identifier. The 
 ### `getChapterInfo(self, chapter_id)`
 
 Retrives information on the chapter associated with the identfier. The data returned is stored in a `dict`, formatted as described [here](api-doc.md#get-apichapterinfo).
+
+### `getMangaForChapter(self, chapter_id)`
+
+Retrieves the identifier of the manga to which the specified chapter belongs. By default, this calls the `getChapterInfo` method and retrieves the `manga` field, which is sub-optimal. It is advised to override this method if there exists a more optimised way of getting this information. In case this method is not overriden, **do not** use it in `getChapterInfo` as it would create an infinite loop, quickly crashing the program (stack overflow error).
 
 ### `getChapterUrls(self, chapter_id)`
 
