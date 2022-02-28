@@ -19,6 +19,14 @@ This file lists the available endpoints for the API.
 - [`POST /api/cancel/download/<id>`](#post-apicanceldownloadid)
 - [`POST /api/cancel/downloads`](#post-apicanceldownloads)
 - [`DELETE /api/downloads/history`](#delete-apidownloadshistory)
+- [`GET /api/chapter/tag`](#get-apichaptertag)
+- [`PUT /api/chapter/tag/<tag>`](#put-apichaptertagtag)
+- [`PUT /api/chapters/tag/<tag>`](#put-apichapterstagtag)
+- [`DELETE /api/chapter/tag`](#delete-apichaptertag)
+- [`DELETE /api/chapters/tag`](#delete-apichapterstag)
+- [`GET /api/manga/fav`](#get-apimangafav)
+- [`PUT /api/manga/fav`](#put-apimangafav)
+- [`DELETE /api/manga/fav`](#delete-apimangafav)
 
 ## `GET /api/ping`
 
@@ -985,11 +993,97 @@ Content of request is not well-formed JSON
 
 ## `GET /api/manga/fav`
 
+Retrieves a boolean indicating if a manga is set as a favourite or not.
+
+### Request parameters
+
+- `url`: The URL of a page on the website
+- `site`: The site for this resource
+- `id`: the identifier of this resource on the site
+
+**Note** : It is mandatory to set a value for either `url` or `site` and `id` for this request to succeed.
+
+### Example request
+
+```Bash
+curl -X GET 'localhost:8090/api/manga/fav?url=https://mangadex.org/title/cfc3d743-bd89-48e2-991f-63e680cc4edf/dr-stone'
+```
+
+### Example response
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+True
+```
+
+[`^ Back to top ^`][top]
+
+
 ## `GET /api/manga/favs`
+
+[`^ Back to top ^`][top]
+
 
 ## `PUT /api/manga/fav`
 
+Adds a manga to the list of favourites.
+
+### Request parameters
+
+- `url`: The URL of a page on the website
+- `site`: The site for this resource
+- `id`: the identifier of this resource on the site
+
+**Note** : It is mandatory to set a value for either `url` or `site` and `id` for this request to succeed.
+
+### Example request
+
+```Bash
+curl -X PUT 'localhost:8090/api/manga/fav?url=https://mangadex.org/title/cfc3d743-bd89-48e2-991f-63e680cc4edf/dr-stone'
+```
+
+### Example responses
+
+If the manga was successfully added :
+```
+HTTP/1.1 201 CREATED
+```
+
+If the manga was already a favourite :
+```
+HTTP/1.1 200 OK
+```
+
+[`^ Back to top ^`][top]
+
+
 ## `DELETE /api/manga/fav`
+
+Removes a manga to the list of favourites.
+
+### Request parameters
+
+- `url`: The URL of a page on the website
+- `site`: The site for this resource
+- `id`: the identifier of this resource on the site
+
+**Note** : It is mandatory to set a value for either `url` or `site` and `id` for this request to succeed.
+
+### Example request
+
+```Bash
+curl -X DELETE 'localhost:8090/api/manga/fav?url=https://mangadex.org/title/cfc3d743-bd89-48e2-991f-63e680cc4edf/dr-stone'
+```
+
+### Example response
+
+```
+HTTP/1.1 200 OK
+```
+
+[`^ Back to top ^`][top]
 
 
 ## `POST /api/download/chapters/new`
