@@ -1,6 +1,6 @@
 
 from nagato.utils.request import RequesterBuilder
-from nagato.utils.errors import ApiConfigurationError, ApiQueryError
+from nagato.utils.errors import ApiConfigurationError
 from nagato.utils.sanitise import sanitiseNodeName
 from nagato.utils.compression import Archiver, getArchiverForMethod
 from nagato.utils.threads import ChapterDownload
@@ -135,7 +135,9 @@ class BaseDownloader :
 		with getConnection() as con :
 			cur = con.cursor()
 			entry = SqlMangaEntry(self._site, manga_id)
-			return entry.star(cur) if star else entry.unstar(cur)
+			res = entry.star(cur) if star else entry.unstar(cur)
+			con.commit()
+		return res
 	
 	def getChaptersTagsForManga(self, manga_id) :
 		with getConnection() as con :
