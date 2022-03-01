@@ -164,44 +164,44 @@ def deleteDownloadsHistory() :
 		'deleted': threads.clearHistory()
 	}
 
-@app.route('/api/chapter/tag', methods=['GET'])
+@app.route('/api/chapter/mark', methods=['GET'])
 @params.chapterFromArgs
-def getChapterTag(dl: BaseDownloader, chapter_id) :
+def getChapterMark(dl: BaseDownloader, chapter_id) :
 	res = dl.getChapterMarks([chapter_id])[chapter_id]
 	return Response(json.dumps(res), 200, content_type='application/json')
 
-@app.route('/api/chapter/tag/<tag>', methods=['PUT'])
+@app.route('/api/chapter/mark/<mark>', methods=['PUT'])
 @params.chapterFromArgs
-def putChapterTag(dl: BaseDownloader, chapter_id, tag: str) :
+def putChapterMark(dl: BaseDownloader, chapter_id, mark: str) :
 	try :
-		mark = database.ChapterMark[tag]
+		mark = database.ChapterMark[mark]
 	except KeyError :
-		raise errors.ApiQueryError(f"Invalid tag: {tag}")
+		raise errors.ApiQueryError(f"Invalid mark: {mark}")
 	res = dl.setChapterMarks([chapter_id], mark)
 	return Response(status=201 if res else 200)
 
-@app.route('/api/chapters/tag/<tag>', methods=['PUT'])
+@app.route('/api/chapters/mark/<mark>', methods=['PUT'])
 @params.chaptersFromContent
-def putChaptersTag(data: dict, tag: str) :
+def putChaptersMark(data: dict, mark: str) :
 	try :
-		mark = database.ChapterMark[tag]
+		mark = database.ChapterMark[mark]
 	except KeyError :
-		raise errors.ApiQueryError(f"Invalid tag: {tag}")
+		raise errors.ApiQueryError(f"Invalid mark: {mark}")
 	res = False
 	for site_data in data.values() :
 		dl: BaseDownloader = site_data['downloader']
 		res = dl.setChapterMarks(site_data['chapters'], mark) or res
 	return Response(status=201 if res else 200)
 
-@app.route('/api/chapter/tag', methods=['DELETE'])
+@app.route('/api/chapter/mark', methods=['DELETE'])
 @params.chapterFromArgs
-def deleteChapterTag(dl: BaseDownloader, chapter_id) :
+def deleteChapterMark(dl: BaseDownloader, chapter_id) :
 	dl.setChapterMarks([chapter_id], None)
 	return Response(status=200)
 
-@app.route('/api/chapters/tag', methods=['DELETE'])
+@app.route('/api/chapters/mark', methods=['DELETE'])
 @params.chaptersFromContent
-def deleteChaptersTag(data: dict) :
+def deleteChaptersMark(data: dict) :
 	for site_data in data.values() :
 		dl: BaseDownloader = site_data['downloader']
 		dl.setChapterMarks(site_data['chapters'], None)

@@ -19,11 +19,11 @@ This file lists the available endpoints for the API.
 - [`POST /api/cancel/download/<id>`](#post-apicanceldownloadid)
 - [`POST /api/cancel/downloads`](#post-apicanceldownloads)
 - [`DELETE /api/downloads/history`](#delete-apidownloadshistory)
-- [`GET /api/chapter/tag`](#get-apichaptertag)
-- [`PUT /api/chapter/tag/<tag>`](#put-apichaptertagtag)
-- [`PUT /api/chapters/tag/<tag>`](#put-apichapterstagtag)
-- [`DELETE /api/chapter/tag`](#delete-apichaptertag)
-- [`DELETE /api/chapters/tag`](#delete-apichapterstag)
+- [`GET /api/chapter/mark`](#get-apichaptermark)
+- [`PUT /api/chapter/mark/<mark>`](#put-apichaptermarkmark)
+- [`PUT /api/chapters/mark/<mark>`](#put-apichaptersmarkmark)
+- [`DELETE /api/chapter/mark`](#delete-apichaptermark)
+- [`DELETE /api/chapters/mark`](#delete-apichaptersmark)
 - [`GET /api/manga/fav`](#get-apimangafav)
 - [`PUT /api/manga/fav`](#put-apimangafav)
 - [`DELETE /api/manga/fav`](#delete-apimangafav)
@@ -832,9 +832,9 @@ Content-Type: application/json
 [`^ Back to top ^`][top]
 
 
-## `GET /api/chapter/tag`
+## `GET /api/chapter/mark`
 
-Retrieves the tag of a chapter, if any. A chapter can be tagged with `DOWNLOADED` or `IGNORED`.
+Retrieves the mark of a chapter, if any. A chapter can be marked with `DOWNLOADED` or `IGNORED`.
 
 ### Request parameters
 
@@ -847,7 +847,7 @@ Retrieves the tag of a chapter, if any. A chapter can be tagged with `DOWNLOADED
 ### Example request
 
 ```Bash
-curl -X GET 'localhost:8090/api/chapter/tag?url=https://mangadex.org/chapter/ec562f76-4654-4621-8198-247622955fdd/1'
+curl -X GET 'localhost:8090/api/chapter/mark?url=https://mangadex.org/chapter/ec562f76-4654-4621-8198-247622955fdd/1'
 ```
 
 ### Example responses
@@ -870,9 +870,9 @@ null
 [`^ Back to top ^`][top]
 
 
-## `PUT /api/chapter/tag/<tag>`
+## `PUT /api/chapter/mark/<mark>`
 
-Sets the tag of a chapter to the one specified in the URL, either `DOWNLOADED` or `IGNORED`.
+Sets the mark of a chapter to the one specified in the URL, either `DOWNLOADED` or `IGNORED`.
 
 ### Request parameters
 
@@ -885,7 +885,7 @@ Sets the tag of a chapter to the one specified in the URL, either `DOWNLOADED` o
 ### Example request
 
 ```Bash
-curl -X PUT 'localhost:8090/api/chapter/tag/DOWNLOADED?url=https://mangadex.org/chapter/ec562f76-4654-4621-8198-247622955fdd/1'
+curl -X PUT 'localhost:8090/api/chapter/mark/DOWNLOADED?url=https://mangadex.org/chapter/ec562f76-4654-4621-8198-247622955fdd/1'
 ```
 
 ### Example response
@@ -897,9 +897,9 @@ HTTP/1.1 201 CREATED
 [`^ Back to top ^`][top]
 
 
-## `PUT /api/chapters/tag/<tag>`
+## `PUT /api/chapters/mark/<mark>`
 
-Sets the tag of one or several chapters to the one specified in the URL, either `DOWNLOADED` or `IGNORED`.
+Sets the mark of one or several chapters to the one specified in the URL, either `DOWNLOADED` or `IGNORED`.
 
 ### Request content
 
@@ -912,7 +912,7 @@ The body of the request must be a json object that can have two fields :
 ### Example request
 
 ```Bash
-curl --header "Content-Type: application/json" -d '{"urls": ["https://mangadex.org/chapter/ec562f76-4654-4621-8198-247622955fdd/1"], "sites": {"mangadex.org": ["75011fda-0eec-4617-a677-e4eb8bb8f55b", "8a82dbff-60a2-4131-83c7-b42df0f7864d"]}}' -X PUT 'localhost:8090/api/chapters/tag/DOWNLOADED'
+curl --header "Content-Type: application/json" -d '{"urls": ["https://mangadex.org/chapter/ec562f76-4654-4621-8198-247622955fdd/1"], "sites": {"mangadex.org": ["75011fda-0eec-4617-a677-e4eb8bb8f55b", "8a82dbff-60a2-4131-83c7-b42df0f7864d"]}}' -X PUT 'localhost:8090/api/chapters/mark/DOWNLOADED'
 ```
 
 ### Example responses
@@ -931,9 +931,9 @@ Content of request is not well-formed JSON
 [`^ Back to top ^`][top]
 
 
-## `DELETE /api/chapter/tag`
+## `DELETE /api/chapter/mark`
 
-Removes the tag of a chapter, if it has one.
+Removes the mark of a chapter, if it has one.
 
 ### Request parameters
 
@@ -946,7 +946,7 @@ Removes the tag of a chapter, if it has one.
 ### Example request
 
 ```Bash
-curl -X DELETE 'localhost:8090/api/chapter/tag?url=https://mangadex.org/chapter/ec562f76-4654-4621-8198-247622955fdd/1'
+curl -X DELETE 'localhost:8090/api/chapter/mark?url=https://mangadex.org/chapter/ec562f76-4654-4621-8198-247622955fdd/1'
 ```
 
 ### Example response
@@ -958,9 +958,9 @@ HTTP/1.1 200 OK
 [`^ Back to top ^`][top]
 
 
-## `DELETE /api/chapters/tag`
+## `DELETE /api/chapters/mark`
 
-Removes the tags of one or several chapters, for those who have one.
+Removes the marks of one or several chapters, for those who have one.
 
 ### Request content
 
@@ -973,7 +973,7 @@ The body of the request must be a json object that can have two fields :
 ### Example request
 
 ```Bash
-curl --header "Content-Type: application/json" -d '{"urls": ["https://mangadex.org/chapter/ec562f76-4654-4621-8198-247622955fdd/1"], "sites": {"mangadex.org": ["75011fda-0eec-4617-a677-e4eb8bb8f55b", "8a82dbff-60a2-4131-83c7-b42df0f7864d"]}}' -X DELETE 'localhost:8090/api/chapters/tag'
+curl --header "Content-Type: application/json" -d '{"urls": ["https://mangadex.org/chapter/ec562f76-4654-4621-8198-247622955fdd/1"], "sites": {"mangadex.org": ["75011fda-0eec-4617-a677-e4eb8bb8f55b", "8a82dbff-60a2-4131-83c7-b42df0f7864d"]}}' -X DELETE 'localhost:8090/api/chapters/mark'
 ```
 
 ### Example responses
