@@ -105,7 +105,7 @@ class BaseDownloader :
 	def destFolderMixed(self, format_info) :
 		return self._destination
 	
-	def getChapterTags(self, chapter_ids: str) :
+	def getChapterMarks(self, chapter_ids: str) :
 		res = {}
 		with getConnection() as con :
 			cur = con.cursor()
@@ -115,7 +115,7 @@ class BaseDownloader :
 				res[chapter_id] = mark.name if mark is not None else None
 		return res
 			
-	def setChapterTags(self, chapter_ids: "list[str]", mark: ChapterMark) -> bool :
+	def setChapterMarks(self, chapter_ids: "list[str]", mark: ChapterMark) -> bool :
 		res = False
 		with getConnection() as con :
 			cur = con.cursor()
@@ -139,7 +139,7 @@ class BaseDownloader :
 			con.commit()
 		return res
 	
-	def getChaptersTagsForManga(self, manga_id) :
+	def getChaptersMarksForManga(self, manga_id) :
 		with getConnection() as con :
 			cur = con.cursor()
 			entry = SqlMangaEntry(self._site, manga_id)

@@ -74,6 +74,8 @@ def getResourceSite() :
 @params.mangaFromArgs
 def getMangaInfo(dl: BaseDownloader, manga_id) :
 	res = dl.getMangaInfo(manga_id)
+	if 'includeFav' in request.args and request.args['includeFav'] == 'true' :
+		res['favourite'] = dl.isMangaStarred(manga_id)
 	return Response(json.dumps(res), 200, content_type='application/json')
 
 
@@ -81,6 +83,8 @@ def getMangaInfo(dl: BaseDownloader, manga_id) :
 @params.chapterFromArgs
 def getChapterInfo(dl: BaseDownloader, chapter_id) :
 	res = dl.getChapterInfo(chapter_id)
+	if 'includeMark' in request.args and request.args['includeMark'] == 'true' :
+		res['mark'] = dl.getChapterMarks([chapter_id])[chapter_id]
 	return Response(json.dumps(res), 200, content_type='application/json')
 
 
@@ -99,6 +103,10 @@ def getMangaCover(dl: BaseDownloader, manga_id) :
 @params.mangaFromArgs
 def getMangaChapters(dl: BaseDownloader, manga_id) :
 	res = dl.getChapters(manga_id)
+	if 'includeMarks' in request.args and request.args['includeMarks'] == 'true' :
+		marks = dl.getChaptersMarksForManga(manga_id)
+		for chapter_id in res :
+			res[chapter_id]['mark'] = marks[chapter_id] if chapter_id in marks else None
 	return Response(json.dumps(res), 200, content_type='application/json')
 
 
@@ -159,7 +167,7 @@ def deleteDownloadsHistory() :
 @app.route('/api/chapter/tag', methods=['GET'])
 @params.chapterFromArgs
 def getChapterTag(dl: BaseDownloader, chapter_id) :
-	res = dl.getChapterTags([chapter_id])[chapter_id]
+	res = dl.getChapterMarks([chapter_id])[chapter_id]
 	return Response(json.dumps(res), 200, content_type='application/json')
 
 @app.route('/api/chapter/tag/<tag>', methods=['PUT'])
@@ -169,7 +177,7 @@ def putChapterTag(dl: BaseDownloader, chapter_id, tag: str) :
 		mark = database.ChapterMark[tag]
 	except KeyError :
 		raise errors.ApiQueryError(f"Invalid tag: {tag}")
-	res = dl.setChapterTags([chapter_id], mark)
+	res = dl.setChapterMarks([chapter_id], mark)
 	return Response(status=201 if res else 200)
 
 @app.route('/api/chapters/tag/<tag>', methods=['PUT'])
@@ -182,13 +190,13 @@ def putChaptersTag(data: dict, tag: str) :
 	res = False
 	for site_data in data.values() :
 		dl: BaseDownloader = site_data['downloader']
-		res = dl.setChapterTags(site_data['chapters'], mark) or res
+		res = dl.setChapterMarks(site_data['chapters'], mark) or res
 	return Response(status=201 if res else 200)
 
 @app.route('/api/chapter/tag', methods=['DELETE'])
 @params.chapterFromArgs
 def deleteChapterTag(dl: BaseDownloader, chapter_id) :
-	dl.setChapterTags([chapter_id], None)
+	dl.setChapterMarks([chapter_id], None)
 	return Response(status=200)
 
 @app.route('/api/chapters/tag', methods=['DELETE'])
@@ -196,7 +204,7 @@ def deleteChapterTag(dl: BaseDownloader, chapter_id) :
 def deleteChaptersTag(data: dict) :
 	for site_data in data.values() :
 		dl: BaseDownloader = site_data['downloader']
-		dl.setChapterTags(site_data['chapters'], None)
+		dl.setChapterMarks(site_data['chapters'], None)
 	return Response(status=200)
 
 @app.route('/api/manga/fav', methods=['GET'])
