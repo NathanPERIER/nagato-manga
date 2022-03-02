@@ -142,9 +142,9 @@ class MangadexDownloader(BaseDownloader) :
 			'pages': attributes['pages'],
 			'team': team,
 			'date': {
-				'day': dtf[2], 
-				'month': dtf[1], 
-				'year': dtf[0]
+				'day': int(dtf[2]), 
+				'month': int(dtf[1]), 
+				'year': int(dtf[0])
 			}
 		}
 	
