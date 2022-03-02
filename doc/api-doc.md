@@ -265,6 +265,7 @@ Retrieves some general information on a manga. The result is a JSON object with 
 	 - `year`: the full year (e.g. 2021)\*
  - `rating`: one of `safe`, `suggestive`, `erotica` or `pornographic`\*
  - `status`: one of `completed`, `ongoing`, `hiatus`, `cancelled`\*
+ - `favourite`: boolean indicating if the manga is a favourite (if requested)
 
 \* may be `null` if unknown
 
@@ -273,6 +274,7 @@ Retrieves some general information on a manga. The result is a JSON object with 
 - `url`: The URL of a page on the website
 - `site`: The site for this resource
 - `id`: the identifier of this resource on the site
+- `includeFav`: `true` if we want to retrieve the favourite boolean
 
 **Note** : It is mandatory to set a value for either `url` or `site` and `id` for this request to succeed.
 
@@ -340,6 +342,7 @@ Retrieves some general information on a chapter. The result is a JSON object wit
      - `day`: the day between 1 and 31\*
 	 - `month`: the month between 1 and 12\*
 	 - `year`: the full year (e.g. 2021)\*
+ - `mark`: the mark of the chapter (if requested), can be `"DOWNLOADED"`, `"IGNORED"` or `null`\*
 
 \* may be `null` if unknown
 
@@ -348,6 +351,7 @@ Retrieves some general information on a chapter. The result is a JSON object wit
 - `url`: The URL of a page on the website
 - `site`: The site for this resource
 - `id`: the identifier of this resource on the site
+- `includeMark`: `true` if we want to retrieve the mark of the chapter
 
 **Note** : It is mandatory to set a value for either `url` or `site` and `id` for this request to succeed.
 
@@ -435,6 +439,11 @@ Retrieves the list of chapters for a manga. The result is a JSON object where th
      - `id`: the identifier of the team on the website
 	 - `name`: the name of the team
 	 - `site`: the website of the scanlation team\*
+ - `date`: an object representing the date at which this chapter was published/modified
+     - `day`: the day between 1 and 31\*
+	 - `month`: the month between 1 and 12\*
+	 - `year`: the full year (e.g. 2021)\*
+ - `mark`: the mark of the chapter (if requested), can be `"DOWNLOADED"`, `"IGNORED"` or `null`\*
 
 \* may be `null` if unknown
 
@@ -443,6 +452,7 @@ Retrieves the list of chapters for a manga. The result is a JSON object where th
 - `url`: The URL of a page on the website
 - `site`: The site for this resource
 - `id`: the identifier of this resource on the site
+- `includeMarks`: `true` if we want to retrieve the marks of the chapters
 
 **Note** : It is mandatory to set a value for either `url` or `site` and `id` for this request to succeed.
 
