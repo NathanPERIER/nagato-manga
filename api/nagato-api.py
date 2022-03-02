@@ -105,8 +105,8 @@ def getMangaChapters(dl: BaseDownloader, manga_id) :
 	res = dl.getChapters(manga_id)
 	if 'includeMarks' in request.args and request.args['includeMarks'] == 'true' :
 		marks = dl.getChaptersMarksForManga(manga_id)
-		for chapter_id in res :
-			res[chapter_id]['mark'] = marks[chapter_id] if chapter_id in marks else None
+		for chapter_id, chapter_info in res.items() :
+			chapter_info['mark'] = marks[chapter_id] if chapter_id in marks else None
 	return Response(json.dumps(res), 200, content_type='application/json')
 
 
