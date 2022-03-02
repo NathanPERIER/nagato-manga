@@ -85,6 +85,7 @@ class MangadexDownloader(BaseDownloader) :
 			(genres if t['attributes']['group'] == 'genre' else tags).append(t['attributes']['name']['en'])
 		return {
 			'id': manga_id,
+			'site': self._site,
 			'title': title,
 			'alt_titles': attributes['altTitles'],
 			'description': desc,

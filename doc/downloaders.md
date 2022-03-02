@@ -32,6 +32,7 @@ class MyDownloader(BaseDownloader) :
 	def getMangaInfo(self, manga_id: str) :
 		return {
 			'id': '',
+			'site': self._site,
 			'title': '',
 			'alt_titles': [],
 			'description': None,
