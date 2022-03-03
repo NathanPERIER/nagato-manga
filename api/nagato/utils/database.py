@@ -4,9 +4,12 @@ from nagato.utils import config
 
 import os
 import sqlite3
+import threading
 import logging
 
 logger = logging.getLogger(__name__)
+
+mutex = threading.Lock()
 
 
 __database_path: str = config.getApiConf('database.path')
@@ -15,15 +18,18 @@ if not __database_path.startswith('/') :
 
 class SqlConnection :
 
-	def __init__(self, path) :
+	def __init__(self, path: str, mutex: threading.Lock) :
 		self._path = path
+		self._mutex = mutex
 	
-	def __enter__(self) :
+	def __enter__(self) -> sqlite3.Connection :
+		self._mutex.acquire()
 		self._con = sqlite3.connect(self._path)
 		return self._con
 	
 	def __exit__(self, exc_type, exc_value, tb) :
 		self._con.close()
+		self._mutex.release()
 		if exc_type is not None :
 			return False
 
@@ -34,7 +40,7 @@ class ChapterMark(Enum) :
 
 
 def getConnection() :
-	return SqlConnection(__database_path)
+	return SqlConnection(__database_path, mutex)
 
 def tableExists(cur: sqlite3.Cursor, table_name: str) -> bool :
 	l = cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name=?", [table_name]).fetchall()
