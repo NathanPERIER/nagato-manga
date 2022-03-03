@@ -83,10 +83,11 @@ class SqlMangaEntry :
 
 class SqlChapterEntry :
 	
-	def __init__(self, site: str, chapter_id: str, downloader) :
+	def __init__(self, site: str, chapter_id: str, downloader, manga_id = None) :
 		self._site = site
 		self._id = chapter_id
 		self._dl = downloader
+		self._manga = manga_id
 
 	def exists(self, cur: sqlite3.Cursor) -> bool :
 		return self.getMark(cur) is not None
@@ -101,7 +102,7 @@ class SqlChapterEntry :
 			cur.execute("UPDATE chapters SET mark=? WHERE site=? and id=?", [mark.value, self._site, self._id])
 			return True
 		if mark is not None and not chapter_exists :
-			manga = self._dl.getMangaForChapter(self._id)
+			manga = self._manga if self._manga is not None else self._dl.getMangaForChapter(self._id)
 			cur.execute("INSERT INTO chapters VALUES (?, ?, ?, ?)", [self._site, self._id, manga, mark.value])
 			return True
 		if mark is None and chapter_exists :
