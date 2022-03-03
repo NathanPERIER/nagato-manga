@@ -111,6 +111,14 @@ class Archiver :
 		'''		
 		return self._filename
 	
+	def getFormatInfo(self) -> "dict[str,str]" :
+		'''getFormatInfo Retrieves the data used to format the filename
+
+		Returns:
+			dict[str,str]: the data used for formatting
+		'''		
+		return self._format
+	
 	def getProgress(self) -> float :
 		'''getProgress Retrieves the proportion of files that have been downloaded so far
 
