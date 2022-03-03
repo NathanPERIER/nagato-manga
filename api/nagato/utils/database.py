@@ -78,7 +78,8 @@ class SqlMangaEntry :
 		return res
 	
 	def getStarredForSite(cur: sqlite3.Cursor, site: str) -> "list[str]" :
-		return cur.execute("SELECT id FROM mangas WHERE site=?", [site]).fetchall()
+		res = cur.execute("SELECT id FROM mangas WHERE site=?", [site]).fetchall()
+		return [e[0] for e in res]
 
 class SqlChapterEntry :
 	

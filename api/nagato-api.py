@@ -5,7 +5,7 @@ import logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s", datefmt='%d/%m/%Y %H:%M:%S')
 
 from nagato.downloaders.base import BaseDownloader
-from nagato.downloaders import listSites, siteForURL, downloaderForURL
+from nagato.downloaders import listSites, siteForURL, downloaderForURL, downloaderForSite
 from nagato.utils import errors, params, threads, database
 
 import json
@@ -218,3 +218,22 @@ def getMangaFav(dl: BaseDownloader, manga_id) :
 def changeMangaFav(dl: BaseDownloader, manga_id) :
 	res = dl.setMangaStar(manga_id, request.method == 'PUT')
 	return Response(status=201 if res and request.method == 'PUT' else 200)
+
+@app.route('/api/manga/favs', methods=['GET'])
+def getMangaFavs() :
+	with database.getConnection() as con :
+		cur = con.cursor()
+		if 'site' in request.args :
+			site = request.args['site']
+			res = {
+				site: database.SqlMangaEntry.getStarredForSite(cur, site)
+			}
+		else :
+			res = database.SqlMangaEntry.getAllStarred(cur)
+	if 'includeInfo' in request.args and request.args['includeInfo'] == 'true' :
+		sites = listSites()
+		for site, manga_ids in res.items() :
+			if site in sites :
+				dl = downloaderForSite(site)
+				res[site] = {manga_id: dl.getMangaInfo(manga_id) for manga_id in manga_ids}
+	return Response(json.dumps(res), 200, content_type='application/json')
