@@ -2,9 +2,12 @@
 
 This file lists the available endpoints for the API.
 
+#### General API information
 - [`GET /api/ping`](#get-apiping)
 - [`GET /api/version`](#get-apiversion)
 - [`GET /api/sites`](#get-apisites)
+
+#### Retrieve information on a manga or chapter
 - [`GET /api/resource/site`](#get-apiresourcesite)
 - [`GET /api/manga/id`](#get-apimangaid)
 - [`GET /api/chapter/id`](#get-apichapterid)
@@ -12,6 +15,8 @@ This file lists the available endpoints for the API.
 - [`GET /api/chapter/info`](#get-apichapterinfo)
 - [`GET /api/manga/cover`](#get-apimangacover)
 - [`GET /api/manga/chapters`](#get-apimangachapters)
+
+#### Perform and manage downloads
 - [`POST /api/download/chapter`](#post-apidownloadchapter)
 - [`POST /api/download/chapters`](#post-apidownloadchapters)
 - [`GET /api/dl_state/<id>`](#get-apidl_stateid)
@@ -19,14 +24,19 @@ This file lists the available endpoints for the API.
 - [`POST /api/cancel/download/<id>`](#post-apicanceldownloadid)
 - [`POST /api/cancel/downloads`](#post-apicanceldownloads)
 - [`DELETE /api/downloads/history`](#delete-apidownloadshistory)
+
+#### Manage marks on chapters
 - [`GET /api/chapter/mark`](#get-apichaptermark)
 - [`PUT /api/chapter/mark/<mark>`](#put-apichaptermarkmark)
 - [`PUT /api/chapters/mark/<mark>`](#put-apichaptersmarkmark)
 - [`DELETE /api/chapter/mark`](#delete-apichaptermark)
 - [`DELETE /api/chapters/mark`](#delete-apichaptersmark)
+
+#### Manage favourite mangas
 - [`GET /api/manga/fav`](#get-apimangafav)
 - [`PUT /api/manga/fav`](#put-apimangafav)
 - [`DELETE /api/manga/fav`](#delete-apimangafav)
+- [`GET /api/manga/favs`](#get-apimangafavs)
 
 ## `GET /api/ping`
 
@@ -378,6 +388,11 @@ Content-Type: application/json
 		"name": "Mangastream", 
 		"site": "https://readms.net/"
 	}, 
+	"date": {
+		"day": 30, 
+		"month": 6, 
+		"year": 2020
+	},
 	"id": "ec562f76-4654-4621-8198-247622955fdd", 
 	"manga": "cfc3d743-bd89-48e2-991f-63e680cc4edf"
 }
@@ -1026,13 +1041,8 @@ curl -X GET 'localhost:8090/api/manga/fav?url=https://mangadex.org/title/cfc3d74
 HTTP/1.1 200 OK
 Content-Type: application/json
 
-True
+true
 ```
-
-[`^ Back to top ^`][top]
-
-
-## `GET /api/manga/favs`
 
 [`^ Back to top ^`][top]
 
@@ -1092,6 +1102,76 @@ curl -X DELETE 'localhost:8090/api/manga/fav?url=https://mangadex.org/title/cfc3
 
 ```
 HTTP/1.1 200 OK
+```
+
+[`^ Back to top ^`][top]
+
+
+## `GET /api/manga/favs`
+
+Retrieves a JSON objects where the keys are sites and the values are lists of manga identifiers (the favourites). 
+
+### Request parameters
+
+- `site`: if present, only returns the identifier for the specified site
+- `includeInfo`: if `true`, the values associated with the sites will be JSON objects where the keys are manga identifiers and the values are manga info
+
+### Example requests
+
+```Bash
+curl -X GET 'localhost:8090/api/manga/favs'
+```
+
+```Bash
+curl -X GET 'localhost:8090/api/manga/favs?site=mangadex.org&includeInfo=true'
+```
+
+### Example responses
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+	"mangadex.org": [
+		"ec562f76-4654-4621-8198-247622955fdd",
+		"75011fda-0eec-4617-a677-e4eb8bb8f55b", 
+		"8a82dbff-60a2-4131-83c7-b42df0f7864d"
+	],
+	"example.com": [
+		"xLlgbg9d8nR2pX2-ry",
+		"fDWYhxZ4UYRPVoZuGX"
+	]
+}
+```
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+	"mangadex.org": {
+		"ec562f76-4654-4621-8198-247622955fdd": {
+			"volume": 1, 
+			"chapter": 1, 
+			"title": "Z=1: Stone World", 
+			"lang": "en", 
+			"pages": 48, 
+			"team": {
+				"id": "9348bde7-ed3e-43e7-88c6-0edcd1debb88", 
+				"name": "Mangastream", 
+				"site": "https://readms.net/"
+			}, 
+			"date": {
+				"day": 30, 
+				"month": 6, 
+				"year": 2020
+			},
+			"id": "ec562f76-4654-4621-8198-247622955fdd", 
+			"manga": "cfc3d743-bd89-48e2-991f-63e680cc4edf"
+		}
+	}
+}
 ```
 
 [`^ Back to top ^`][top]
