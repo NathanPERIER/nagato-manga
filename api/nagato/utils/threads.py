@@ -1,5 +1,6 @@
 from nagato.utils.errors import ApiNotFoundError
 from nagato.utils.compression import Archiver
+from nagato.utils.database import getConnection, ChapterMark, SqlChapterEntry
 
 import time
 import hashlib
@@ -71,9 +72,10 @@ def _timestamp() :
 
 class ChapterDownload :
 
-	def __init__(self, downloader, chapter_id) :
+	def __init__(self, downloader, chapter_id, register=False) :
 		self._downloader = downloader
 		self._chapter = chapter_id
+		self._register = register
 		self._archiver : Archiver = downloader.getArchiver(chapter_id)
 		self._creation = _timestamp()
 		self.setStatus(DownloadState.CREATED)
@@ -124,6 +126,13 @@ class ChapterDownload :
 	def after(self, _=None) :
 		if not self._status.isFinal() :
 			self.setStatus(DownloadState.CANCELLED if self._cancelled else DownloadState.FAILED)
+		if self._status == DownloadState.COMPLETE and self._register :
+			with getConnection() as con :
+				cur = con.cursor()
+				entry = SqlChapterEntry(self._downloader.getSite(), self._chapter, 
+						self._downloader, self._archiver.getFormatInfo()['manga_id'])
+				entry.setMark(cur, ChapterMark.DOWNLOADED)
+				con.commit()
 		logger.info('Download %s exited with status %s', self._id, str(self._status))
 	
 	def getState(self) -> dict :
