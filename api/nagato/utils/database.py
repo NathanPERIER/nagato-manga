@@ -4,9 +4,12 @@ from nagato.utils import config
 
 import os
 import sqlite3
+import threading
 import logging
 
 logger = logging.getLogger(__name__)
+
+mutex = threading.Lock()
 
 
 __database_path: str = config.getApiConf('database.path')
@@ -15,15 +18,18 @@ if not __database_path.startswith('/') :
 
 class SqlConnection :
 
-	def __init__(self, path) :
+	def __init__(self, path: str, mutex: threading.Lock) :
 		self._path = path
+		self._mutex = mutex
 	
-	def __enter__(self) :
+	def __enter__(self) -> sqlite3.Connection :
+		self._mutex.acquire()
 		self._con = sqlite3.connect(self._path)
 		return self._con
 	
 	def __exit__(self, exc_type, exc_value, tb) :
 		self._con.close()
+		self._mutex.release()
 		if exc_type is not None :
 			return False
 
@@ -34,7 +40,7 @@ class ChapterMark(Enum) :
 
 
 def getConnection() :
-	return SqlConnection(__database_path)
+	return SqlConnection(__database_path, mutex)
 
 def tableExists(cur: sqlite3.Cursor, table_name: str) -> bool :
 	l = cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name=?", [table_name]).fetchall()
@@ -83,10 +89,11 @@ class SqlMangaEntry :
 
 class SqlChapterEntry :
 	
-	def __init__(self, site: str, chapter_id: str, downloader) :
+	def __init__(self, site: str, chapter_id: str, downloader, manga_id = None) :
 		self._site = site
 		self._id = chapter_id
 		self._dl = downloader
+		self._manga = manga_id
 
 	def exists(self, cur: sqlite3.Cursor) -> bool :
 		return self.getMark(cur) is not None
@@ -101,7 +108,7 @@ class SqlChapterEntry :
 			cur.execute("UPDATE chapters SET mark=? WHERE site=? and id=?", [mark.value, self._site, self._id])
 			return True
 		if mark is not None and not chapter_exists :
-			manga = self._dl.getMangaForChapter(self._id)
+			manga = self._manga if self._manga is not None else self._dl.getMangaForChapter(self._id)
 			cur.execute("INSERT INTO chapters VALUES (?, ?, ?, ?)", [self._site, self._id, manga, mark.value])
 			return True
 		if mark is None and chapter_exists :

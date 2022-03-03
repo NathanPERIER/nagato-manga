@@ -113,16 +113,18 @@ def getMangaChapters(dl: BaseDownloader, manga_id) :
 @app.route('/api/download/chapter', methods=['POST'])
 @params.chapterFromArgs
 def postChapterDownload(dl: BaseDownloader, chapter_id) :
-	res = dl.downloadChapters([chapter_id])[0]
+	register_mark = 'addMark' in request.args and request.args['addMark'] == 'true'
+	res = dl.downloadChapters([chapter_id], register_mark)[0]
 	return Response(json.dumps(res), 202, content_type='application/json')
 
 @app.route('/api/download/chapters', methods=['POST'])
 @params.chaptersFromContent
 def postChaptersDownload(data: dict) :
+	register_mark = 'addMark' in request.args and request.args['addMark'] == 'true'
 	res = []
 	for site_data in data.values() :
 		dl: BaseDownloader = site_data['downloader']
-		res.extend(dl.downloadChapters(site_data['chapters']))
+		res.extend(dl.downloadChapters(site_data['chapters'], register_mark))
 	return Response(json.dumps(res), 202, content_type='application/json')
 
 @app.route('/api/dl_state/<dl_id>', methods=['GET'])

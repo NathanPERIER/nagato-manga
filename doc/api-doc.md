@@ -512,13 +512,18 @@ Starts the download of a chapter to the server and returns an identifier that wi
 - `url`: The URL of a page on the website
 - `site`: The site for this resource
 - `id`: the identifier of this resource on the site
+- `addMark`: `true` if we want to mark the chapter as `DOWNLOADED` if the download is successful
 
 **Note** : It is mandatory to set a value for either `url` or `site` and `id` for this request to succeed.
 
-### Example request
+### Example requests
 
 ```Bash
 curl -X POST 'localhost:8090/api/download/chapter?url=https://mangadex.org/chapter/ec562f76-4654-4621-8198-247622955fdd/1'
+```
+
+```Bash
+curl -X POST 'localhost:8090/api/download/chapter?url=https://mangadex.org/chapter/ec562f76-4654-4621-8198-247622955fdd/1&addMark=true'
 ```
 
 ### Example response
@@ -536,6 +541,10 @@ Content-Type: application/json
 ## `POST /api/download/chapters`
 
 Starts the downloads for several chapters and returns a list of download identifiers.
+
+### Request parameter (optional)
+
+- `addMark`: `true` if we want to mark the chapters as `DOWNLOADED` if the download is successful
 
 ### Request content
 
