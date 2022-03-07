@@ -239,3 +239,9 @@ def getMangaFavs() :
 				dl = downloaderForSite(site)
 				res[site] = {manga_id: dl.getMangaInfo(manga_id) for manga_id in manga_ids}
 	return Response(json.dumps(res), 200, content_type='application/json')
+
+@app.route('/api/manga/marked', methods=['GET'])
+@params.mangaFromArgs
+def getMangaMarked(dl: BaseDownloader, manga_id) :
+	res = dl.getChaptersMarksForManga(manga_id)
+	return Response(json.dumps(res), 200, content_type='application/json')
