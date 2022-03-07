@@ -1026,6 +1026,38 @@ Content of request is not well-formed JSON
 [`^ Back to top ^`][top]
 
 
+## `GET /api/manga/marked`
+
+Fetches the list of marked chapters for a manga. The result will be a JSON object where the keys are chapter identifiers and the values are marks (`DOWNLOADED` or `IGNORED`)
+
+### Request parameters
+
+- `url`: The URL of a page on the website
+- `site`: The site for this resource
+- `id`: the identifier of this resource on the site
+
+**Note** : It is mandatory to set a value for either `url` or `site` and `id` for this request to succeed.
+
+### Example request
+
+```Bash
+curl -X GET 'localhost:8090/api/manga/marked?url=https://mangadex.org/title/cfc3d743-bd89-48e2-991f-63e680cc4edf/dr-stone'
+```
+
+### Example response
+
+```
+HTTP/1.1 200 OK
+
+{
+	"ec562f76-4654-4621-8198-247622955fdd": "DOWNLOADED",
+	"75011fda-0eec-4617-a677-e4eb8bb8f55b": "IGNORED"
+}
+```
+
+[`^ Back to top ^`][top]
+
+
 ## `GET /api/manga/fav`
 
 Retrieves a boolean indicating if a manga is set as a favourite or not.
@@ -1143,9 +1175,9 @@ Content-Type: application/json
 
 {
 	"mangadex.org": [
-		"ec562f76-4654-4621-8198-247622955fdd",
-		"75011fda-0eec-4617-a677-e4eb8bb8f55b", 
-		"8a82dbff-60a2-4131-83c7-b42df0f7864d"
+		"cfc3d743-bd89-48e2-991f-63e680cc4edf",
+		"a25e46ec-30f7-4db6-89df-cacbc1d9a900", 
+		"28b5d037-175d-4119-96f8-e860e408ebe9"
 	],
 	"example.com": [
 		"xLlgbg9d8nR2pX2-ry",
@@ -1154,30 +1186,41 @@ Content-Type: application/json
 }
 ```
 
+With the info included :
 ```
 HTTP/1.1 200 OK
 Content-Type: application/json
 
 {
 	"mangadex.org": {
-		"ec562f76-4654-4621-8198-247622955fdd": {
-			"volume": 1, 
-			"chapter": 1, 
-			"title": "Z=1: Stone World", 
-			"lang": "en", 
-			"pages": 48, 
-			"team": {
-				"id": "9348bde7-ed3e-43e7-88c6-0edcd1debb88", 
-				"name": "Mangastream", 
-				"site": "https://readms.net/"
-			}, 
-			"date": {
-				"day": 30, 
-				"month": 6, 
-				"year": 2020
-			},
-			"id": "ec562f76-4654-4621-8198-247622955fdd", 
-			"manga": "cfc3d743-bd89-48e2-991f-63e680cc4edf"
+		"cfc3d743-bd89-48e2-991f-63e680cc4edf": {
+			"id": "cfc3d743-bd89-48e2-991f-63e680cc4edf", 
+			"title": "Dr. Stone", 
+			"alt_titles": [
+				{"tr": "Doktor Ta\u015f"}, 
+				{"en": "Dr.Stone"}, 
+				{"ru": "\u0414\u043e\u043a\u0442\u043e\u0440 \u0421\u0442\u043e\u0443\u043d"}, 
+				{"ru": "\u041f\u0440\u043e\u0444\u0435\u0441\u0441\u043e\u0440 \u043a\u0430\u043c\u0435\u043d\u043d\u043e\u0433\u043e \u0432\u0435\u043a\u0430"}, 
+				{"ja": "\u30c9\u30af\u30bf\u30fc\u30b9\u30c8\u30fc\u30f3"}
+			], 
+			"description": "...", 
+			"authors": [
+				{
+					"id": "6afbe7ae-36a4-4d95-aacc-610bd9c64332", 
+					"name": "Inagaki Riichiro"
+				}
+			], 
+			"artists": [
+				{
+					"id": "e2363c83-22b9-45ba-af27-2c7bcbef7d63", 
+					"name": "Boichi"
+				}
+			], 
+			"tags": ["Sci-Fi", "Action", "Comedy", "Survival", "Adventure", "Post-Apocalyptic", "Drama", "Slice of Life", "Cooking", "Supernatural", "Mystery"], 
+			"lang": "ja", 
+			"date": {"day": null, "month": null, "year": 2017}, 
+			"rating": "safe", 
+			"status": "ongoing"
 		}
 	}
 }
