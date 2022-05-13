@@ -75,5 +75,5 @@ def getExtraConf(file, subfolder: str = None) :
 	if subfolder is None :
 		filepath = os.path.join(__extras_dir, f"{file}.json")
 	else :
-		filepath = os.path.join(os.path.join(__extras_dir, filepath), f"{file}.json")
+		filepath = os.path.join(os.path.join(__extras_dir, subfolder), f"{file}.json")
 	return loadJson(filepath)
