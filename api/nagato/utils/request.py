@@ -5,6 +5,7 @@ import logging
 import requests
 from collections import deque
 from time import sleep
+import bs4
 
 logger = logging.getLogger(__name__)
 
@@ -12,6 +13,9 @@ _request_cache_maxlen = config.getApiConf('requests.cache.maxlen')
 
 
 class HttpCache :
+	"""
+	Used for caching the responses of HTTP requests
+	"""
 	
 	def __init__(self, maxlen) :
 		self._maxlen = maxlen
@@ -40,6 +44,9 @@ else :
 
 
 class Requester :
+	"""
+	Pre-configured object for making HTTP requests and interacting with the cache
+	"""
 	
 	def __init__(self, verb, headers={}, handlers={}, ceh=None, timeout=None) :
 		self._verb = verb
@@ -88,6 +95,10 @@ class Requester :
 		if cache :
 			_request_cache.add(url, res)
 		return res
+	
+	def requestSoup(self, url, mapper, cache=True, delay=0) :
+		soup_mapper = lambda r : mapper(bs4.BeautifulSoup(r.text, features="lxml"))
+		return self.requestMap(url, soup_mapper, cache, delay)
 
 	def requestBinary(self, url, cache=False, delay=0) -> bytes :
 		return self.requestMap(url, lambda r : r.content, cache, delay)
@@ -125,6 +136,10 @@ class Requester :
 
 	
 class SessionRequester(Requester) :
+	"""
+	Requester that uses a session to perform bulk requests.
+	Should always be used in a `with ... as ...` block.
+	"""
 
 	def __init__(self, verb, headers={}, handlers={}, ceh=None, timeout=None) :
 		super().__init__(verb, headers, handlers, ceh, timeout)

@@ -2,3 +2,4 @@ validators
 flask
 gunicorn
 Pillow
+beautifulsoup4

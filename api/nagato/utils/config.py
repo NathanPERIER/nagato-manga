@@ -10,11 +10,14 @@ __conf_dir = os.path.join(API_DIR, 'config')
 __conf_file = os.path.join(__conf_dir, 'conf.json')
 __env_conf_file = os.path.join(__conf_dir, 'env.json')
 
-with open(__conf_file, 'r') as f :
-	conf = json.load(f)
+__extras_dir = os.path.join(API_DIR, 'default-config/extra')
 
-with open(__env_conf_file, 'r') as f :
-	env_conf = json.load(f)
+def loadJson(path) :
+	with open(path, 'r') as f :
+		return json.load(f)
+
+conf = loadJson(__conf_file)
+env_conf = loadJson(__env_conf_file)
 
 
 def _transformOnAssign(d, key, new_val) :
@@ -66,3 +69,11 @@ def getApiConf(key) :
 	if key in _api_conf :
 		return _api_conf[key]
 	raise ApiConfigurationError(f"Missing property \"{key}\" for the configuration of the API")
+
+
+def getExtraConf(file, subfolder: str = None) :
+	if subfolder is None :
+		filepath = os.path.join(__extras_dir, f"{file}.json")
+	else :
+		filepath = os.path.join(os.path.join(__extras_dir, subfolder), f"{file}.json")
+	return loadJson(filepath)
