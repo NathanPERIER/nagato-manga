@@ -13,6 +13,7 @@ The class must be created in a `.py` file in the `/api/nagato/downloaders/custom
 Here is a base template that you can fill to adapt it to a certain site :
 
 ```Python
+from nagato.utils.request import Requester
 from nagato.utils.compression import Archiver
 from nagato.downloaders import custom
 from nagato.downloaders.base import BaseDownloader
@@ -31,7 +32,7 @@ class MyDownloader(BaseDownloader) :
 
 	def getMangaInfo(self, manga_id: str) :
 		return {
-			'id': '',
+			'id': manga_id,
 			'site': self._site,
 			'title': '',
 			'alt_titles': [],
@@ -54,7 +55,7 @@ class MyDownloader(BaseDownloader) :
 		return None
 
 	def getChapters(self, manga_id: str) :
-		return [
+		return {
 			'id': {
 				'volume': 1, 
 				'chapter': 1, 
@@ -72,11 +73,11 @@ class MyDownloader(BaseDownloader) :
 					'site': None
 				}
 			}
-		]
+		}
 	
 	def getChapterInfo(self, chapter_id: str) : 
 		return {
-			'id': '', 
+			'id': chapter_id, 
 			'manga': '', # an identifier
 			'volume': 1, 
 			'chapter': 1, 
@@ -100,7 +101,7 @@ class MyDownloader(BaseDownloader) :
 		return self.getChapterInfo(chapter_id)['manga']
 	
 	def getChapterUrls(self, chapter_id: str) -> "tuple[list[str], Requester]" :
-		return self._requester.requestJson(f"https://exmple.com/api/pages/{chapter_id}")
+		return self._requester.requestJson(f"https://exmple.com/api/pages/{chapter_id}"), builder
 
 	def downloadChapter(self, chapter_id: str, archiver: Archiver) :
 		# This is the default implementation, only override if necessary
