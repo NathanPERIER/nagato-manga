@@ -145,3 +145,25 @@ class BaseDownloader :
 			entry = SqlMangaEntry(self._site, manga_id)
 			res = entry.getChaptersWithTags(cur)
 		return {a: b.name for a, b in res.items()}
+	
+	def getStarredMangas(self) -> "list[str]" :
+		with getConnection() as con :
+			cur = con.cursor()
+			res = SqlMangaEntry.getStarredForSite(cur, self._site)
+		return res
+
+	def downloadUnmarked(self, manga_id: str) -> "list[str]" :
+		marks = self.getChaptersMarksForManga(manga_id)
+		chapters = self.getChapters(manga_id)
+		unmarked = [c for c in chapters.keys() if c not in marks]
+		return self.downloadChapters(unmarked, True)
+
+	def downloadAllNew(self, cur) -> "list[str]" :
+		unmarked = []
+		mangas = SqlMangaEntry.getStarredForSite(cur, self._site)
+		for manga_id in mangas :
+			entry = SqlMangaEntry(self._site, manga_id)
+			marks = entry.getChaptersWithTags(cur)
+			chapters = self.getChapters(manga_id)
+			unmarked.extend([c for c in chapters if c not in marks])
+		return self.downloadChapters(unmarked, True)
