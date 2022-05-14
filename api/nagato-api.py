@@ -254,3 +254,17 @@ def postDownloadNewChapters(dl: BaseDownloader, manga_id) :
 	res = dl.downloadUnmarked(manga_id)
 	return Response(json.dumps(res), 200, content_type='application/json')
 
+@app.route('/api/download/chapters/allnew', methods=['POST'])
+def postDownloadAllNewChapters() :
+	with database.getConnection() as con :
+		cur = con.cursor()
+		if 'site' in request.args :
+			dl = downloaderForSite(request.args['site'])
+			res = dl.downloadAllNew(cur)
+		else :
+			res = []
+			starred = database.SqlMangaEntry.getAllStarred(cur).keys()
+			for site in starred :
+				dl = downloaderForSite(site)
+				res.extend(dl.downloadAllNew(cur))
+	return Response(json.dumps(res), 200, content_type='application/json')
