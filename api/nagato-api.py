@@ -248,13 +248,13 @@ def getMangaMarked(dl: BaseDownloader, manga_id) :
 	res = dl.getChaptersMarksForManga(manga_id)
 	return Response(json.dumps(res), 200, content_type='application/json')
 
-@app.route('/api/download/chapters/new', methods=['POST'])
+@app.route('/api/download/new', methods=['POST'])
 @params.mangaFromArgs
 def postDownloadNewChapters(dl: BaseDownloader, manga_id) :
 	res = dl.downloadUnmarked(manga_id)
-	return Response(json.dumps(res), 200, content_type='application/json')
+	return Response(json.dumps(res), 202, content_type='application/json')
 
-@app.route('/api/download/chapters/allnew', methods=['POST'])
+@app.route('/api/download/allnew', methods=['POST'])
 def postDownloadAllNewChapters() :
 	with database.getConnection() as con :
 		cur = con.cursor()
@@ -267,4 +267,4 @@ def postDownloadAllNewChapters() :
 			for site in starred :
 				dl = downloaderForSite(site)
 				res.extend(dl.downloadAllNew(cur))
-	return Response(json.dumps(res), 200, content_type='application/json')
+	return Response(json.dumps(res), 202, content_type='application/json')
