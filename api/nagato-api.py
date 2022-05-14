@@ -139,6 +139,7 @@ def getDownloadStates() :
 		ids = request.args.getlist('ids')
 	elif 'ids[]' in request.args :
 		ids = request.args.getlist('ids[]')
+	# Note : if `None`, just retrieve all the current downloads
 	res = threads.getAllDownloadStates(ids)
 	return Response(json.dumps(res), 200, content_type='application/json')
 
@@ -223,14 +224,15 @@ def changeMangaFav(dl: BaseDownloader, manga_id) :
 
 @app.route('/api/manga/favs', methods=['GET'])
 def getMangaFavs() :
-	with database.getConnection() as con :
-		cur = con.cursor()
-		if 'site' in request.args :
-			site = request.args['site']
-			res = {
-				site: database.SqlMangaEntry.getStarredForSite(cur, site)
-			}
-		else :
+	if 'site' in request.args :
+		site = request.args['site']
+		dl = downloaderForSite(site)
+		res = {
+			site: dl.getStarredMangas()
+		}
+	else :
+		with database.getConnection() as con :
+			cur = con.cursor()
 			res = database.SqlMangaEntry.getAllStarred(cur)
 	if 'includeInfo' in request.args and request.args['includeInfo'] == 'true' :
 		sites = listSites()
@@ -245,3 +247,10 @@ def getMangaFavs() :
 def getMangaMarked(dl: BaseDownloader, manga_id) :
 	res = dl.getChaptersMarksForManga(manga_id)
 	return Response(json.dumps(res), 200, content_type='application/json')
+
+@app.route('/api/download/chapters/new', methods=['POST'])
+@params.mangaFromArgs
+def postDownloadNewChapters(dl: BaseDownloader, manga_id) :
+	res = dl.downloadUnmarked(manga_id)
+	return Response(json.dumps(res), 200, content_type='application/json')
+

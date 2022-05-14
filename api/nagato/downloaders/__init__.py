@@ -13,7 +13,7 @@ def instanciate_downloaders() :
 		available_downloaders[site] = downloader_class(site, DownloaderConf.forSite(site))
 
 
-def listSites() :
+def listSites() -> "list[str]" :
 	return list(available_downloaders.keys())
 
 
