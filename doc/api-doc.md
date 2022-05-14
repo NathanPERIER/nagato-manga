@@ -19,6 +19,8 @@ This file lists the available endpoints for the API.
 #### Perform and manage downloads
 - [`POST /api/download/chapter`](#post-apidownloadchapter)
 - [`POST /api/download/chapters`](#post-apidownloadchapters)
+- [`POST /api/download/new`](#post-apidownloadnew)
+- [`POST /api/download/allnew`](#post-apidownloadallnew)
 - [`GET /api/dl_state/<id>`](#get-apidl_stateid)
 - [`GET /api/dl_states/agregate`](#get-apidl_statesagregate)
 - [`POST /api/cancel/download/<id>`](#post-apicanceldownloadid)
@@ -31,6 +33,7 @@ This file lists the available endpoints for the API.
 - [`PUT /api/chapters/mark/<mark>`](#put-apichaptersmarkmark)
 - [`DELETE /api/chapter/mark`](#delete-apichaptermark)
 - [`DELETE /api/chapters/mark`](#delete-apichaptersmark)
+- [`GET /api/manga/marked`](#get-apimangamarked)
 
 #### Manage favourite mangas
 - [`GET /api/manga/fav`](#get-apimangafav)
@@ -343,7 +346,7 @@ Retrieves some general information on a chapter. The result is a JSON object wit
  - `chapter`: the number of this chapter
  - `title`: the title of this chapter\*
  - `lang`: the language in which this chapter is published (`"en"`, `"jp"`, `"fr"`, ...)
- - `pages`: the number of pages in this chapter
+ - `pages`: the number of pages in this chapter\*
  - `team`: an object containing data on the translation/scanlation team\*
      - `id`: the identifier of the team on the website
 	 - `name`: the name of the team
@@ -449,7 +452,7 @@ Retrieves the list of chapters for a manga. The result is a JSON object where th
  - `chapter`: the number of this chapter
  - `title`: the title of this chapter\*
  - `lang`: the language in which this chapter is published (`"en"`, `"jp"`, `"fr"`, ...)
- - `pages`: the number of pages in this chapter
+ - `pages`: the number of pages in this chapter\*
  - `team`: an object containing data on the translation/scanlation team\*
      - `id`: the identifier of the team on the website
 	 - `name`: the name of the team
@@ -574,6 +577,76 @@ If the content type is not `application/json` or the json is invalid :
 HTTP/1.1 400 BAD REQUEST
 
 Content of request is not well-formed JSON
+```
+
+[`^ Back to top ^`][top]
+
+
+## `POST /api/download/new`
+
+Downloads all the chapters of a manga that are not tagged yet and marks them as `DOWNLOADED` afterwards. Returns a list of download identifiers.
+
+### Request parameters
+
+- `url`: The URL of a page on the website
+- `site`: The site for this resource
+- `id`: the identifier of this resource on the site
+
+**Note** : It is mandatory to set a value for either `url` or `site` and `id` for this request to succeed.
+
+### Example request
+
+```Bash
+curl -X POST 'localhost:8090/api/download/new?url=https://mangadex.org/title/cfc3d743-bd89-48e2-991f-63e680cc4edf/dr-stone'
+```
+
+### Example response
+
+```
+HTTP/1.1 202 ACCEPTED
+Content-Type: application/json
+
+[
+	"aB6GsZS9wLwFu2tdWCtP7rdT560GjKKI",
+	"ubInS3Y69rERtINc3x3un7m0hxK48Ou4",
+	"r9StHdfEFeRS5Ic2QeVx7Ss3Oq2T11jS"
+]
+```
+
+[`^ Back to top ^`][top]
+
+
+## `POST /api/download/allnew`
+
+Downloads all the chapters that are not tagged yet, for all starred mangas, and marks them as `DOWNLOADED` afterwards. Can be applied to a specific site or globally (i.e. for all supported sites). Returns a list of dwonload identifiers.
+
+### Request parameters
+
+- `site`: The site for which we want to download the chapters
+
+### Example requests
+
+Download all new chapters, for all sites :
+```Bash
+curl -X POST 'localhost:8090/api/download/allnew'
+```
+
+Download all new chapters on `example.com` :
+```Bash
+curl -X POST 'localhost:8090/api/download/allnew?site=example.com'
+```
+
+### Example response
+
+```
+HTTP/1.1 202 ACCEPTED
+Content-Type: application/json
+
+[
+	"aB6GsZS9wLwFu2tdWCtP7rdT560GjKKI",
+	"ubInS3Y69rERtINc3x3un7m0hxK48Ou4",
+	"r9StHdfEFeRS5Ic2QeVx7Ss3Oq2T11jS"
+]
 ```
 
 [`^ Back to top ^`][top]
@@ -1227,11 +1300,6 @@ Content-Type: application/json
 ```
 
 [`^ Back to top ^`][top]
-
-
-## `POST /api/download/chapters/new`
-
-## `POST /api/download/chapters/allnew`
 
 
 [top]: #nagato-api

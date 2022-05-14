@@ -13,7 +13,7 @@ The class must be created in a `.py` file in the `/api/nagato/downloaders/custom
 Here is a base template that you can fill to adapt it to a certain site :
 
 ```Python
-from nagato.utils.request import Requester
+from nagato.utils.request import RequesterBuilder
 from nagato.utils.compression import Archiver
 from nagato.downloaders import custom
 from nagato.downloaders.base import BaseDownloader
@@ -100,7 +100,7 @@ class MyDownloader(BaseDownloader) :
 		# This is the default implementation, override if possible
 		return self.getChapterInfo(chapter_id)['manga']
 	
-	def getChapterUrls(self, chapter_id: str) -> "tuple[list[str], Requester]" :
+	def getChapterUrls(self, chapter_id: str) -> "tuple[list[str], RequesterBuilder]" :
 		return self._requester.requestJson(f"https://exmple.com/api/pages/{chapter_id}"), builder
 
 	def downloadChapter(self, chapter_id: str, archiver: Archiver) :
