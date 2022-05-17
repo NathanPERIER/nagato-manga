@@ -2,21 +2,9 @@
 
 ## Docker deployment (recommanded)
 
-There is currently no official build available, you must build the image yourself for now.
-
-### Build the Docker image
-
-Building a Docker image is super simple, just make sure you have [Docker installed](https://docs.docker.com/engine/install/). Then, you can run the following commands :
-
-```Bash
-$ git clone 'this repository'
-$ cd nagato-manga/api
-$ docker build .
-```
-
 ### Set up the container
 
-In the following code, replace `nagato-api` (name of the image) by the ID provided by Docker at the end of the `docker build`. You can see the list of your images with `docker images`.
+The Docker image for the API is available on [Docker Hub](https://hub.docker.com/r/elpain/nagato-api).
 
 You can deploy the container with the following command that will expose the API on port `8000` :
 
@@ -26,8 +14,8 @@ docker run -d \
     -p 8000:8090 \
     -v /path/to/downloads:/data \
     -v /path/to/config:/opt/nagato-api/config \
-    -e NAGATO_API_PORT=8090 \
-    nagato-api
+    -v /path/to/database:/opt/nagato-api/nagato.db \
+    elpain/nagato-api:latest
 ```
 
 By default there is only one destination folder for all downloads, which is `/data`. This can change however if you edit the configuration file, as you can define a specific destination folder for any downloader. When you tweak such parameters, make sure to edit the binds and mounts accordingly.
@@ -36,15 +24,27 @@ As for the configuration file themselves, you don't necessarily have to modify t
 
 Alternatively, you can use `docker-compose`. An example file equivalent to the code above is available [here](examples/docker-compose.yml).
 
+### Build the Docker image
+
+You can also build the image yourself if you want.
+
+Make sure you have [Docker installed](https://docs.docker.com/engine/install/). Then, you can run the following commands :
+
+```Bash
+$ git clone 'https://github.com/NathanPERIER/nagato-manga'
+$ cd nagato-manga/api
+$ docker build .
+```
+
 ## Manual deployment
 
 If you want to deploy the API without Docker, you will need python >= 3.6 and pip3 to be installed.
 
 ```Bash
-$ git clone 'this repository'
+$ git clone 'https://github.com/NathanPERIER/nagato-manga'
 $ cd nagato-manga/api
 $ pip3 install -r requirements.txt # Only the first time or if missing dependencies after a pull
 $ mkdir config
-$ cp default-config/*.json config  # You should probably change the `chapters.destination` (at least)
+$ cp default-config/*.json config  # You should probably at least change the `chapters.destination` in `config/conf.json`
 $ gunicorn --config default-config/gunicorn.conf.py nagato-api:app
 ```

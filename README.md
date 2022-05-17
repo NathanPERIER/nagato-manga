@@ -18,11 +18,9 @@ docker run -d \
     -p 8000:8090 \
     -v /path/to/downloads:/data \
     -v /path/to/config:/opt/nagato-api/config \
-    -e NAGATO_API_PORT=8090 \
-    nagato-api
+    -v /path/to/database:/opt/nagato-api/nagato.db \
+    elpain/nagato-api:latest
 ```
-
-**Note that this currently requires to build the image yourself**
 
 More information [here](doc/deployment.md).
 

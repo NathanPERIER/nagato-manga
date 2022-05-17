@@ -1,12 +1,18 @@
 version: "3.9"
 services:
   api:
-    image: nagato-api
+    image: elpain/nagato-api:latest
     container_name: nagato-api
     volumes:
       - /path/to/downloads:/data
       - /path/to/config:/opt/nagato-api/config
+      - /path/to/database:/opt/nagato-api/nagato.db
     ports:
       - 8000:8090
     environment:
-      - "NAGATO_API_PORT=8090"
+      # These are the default values, take a look at the documentation for more information
+      - "NAGATO_API_PORT=8090"      # has to correspond with the port exposed
+      - "NAGATO_DOWNLOAD_DIR=/data" # has to correspond with the volume mapping
+      - "NAGATO_DOWNLOAD_FORMAT=${manga} -.- C${chapter} ${title}"
+      - "NAGATO_DOWNLOAD_METHOD=cbz"
+      - "NAGATO_CACHE_SIZE=50" 
