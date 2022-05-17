@@ -123,8 +123,10 @@ class Archiver :
 		'''getProgress Retrieves the proportion of files that have been downloaded so far
 
 		Returns:
-			float: The proprtion of downloaded files (between 0 and 1 included)
+			float: The proportion of downloaded files (between 0 and 1 included), or -1 if the number of pages is not known
 		'''
+		if self._npages is None :
+			return -1
 		return self._cpt / self._npages
 	
 	def getRawSize(self) -> int :
@@ -271,7 +273,7 @@ class ZipArchiver(Archiver) :
 			# traceback.print_exception(exc_type, exc_value, tb)
 			self._buffer.close()
 			return False
-		if self._npages != self._cpt :
+		if self._npages is not None and self._npages != self._cpt :
 			logger.warning('Expected %d pages, got %d', self._npages, self._cpt)
 		filepath = os.path.join(self._destination, f"{self._filename}.{self._extension}")
 		with open(filepath, 'wb') as f :

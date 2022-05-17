@@ -1,6 +1,7 @@
-from nagato.utils.errors import ApiNotFoundError, ApiQueryError
+from nagato.utils.errors import ApiConfigurationError, ApiNotFoundError, ApiQueryError
 from nagato.utils import config
 
+import time
 import logging
 import requests
 from collections import deque
@@ -10,6 +11,7 @@ import bs4
 logger = logging.getLogger(__name__)
 
 _request_cache_maxlen = config.getApiConf('requests.cache.maxlen')
+_request_cache_threshold = config.getApiConf('requests.cache.threshold')
 
 
 class HttpCache :
@@ -17,28 +19,38 @@ class HttpCache :
 	Used for caching the responses of HTTP requests
 	"""
 	
-	def __init__(self, maxlen) :
+	def __init__(self, maxlen, threshold) :
 		self._maxlen = maxlen
+		self._threshold = threshold
 		self._saved_requests = {}
 		self._urls = deque(maxlen = maxlen)
 	
+	def checkValid(self, ts: int) -> bool :
+		return ts - int(time.time()) < self._threshold
+
 	def get(self, url) :
 		if url in self._saved_requests :
 			self._urls.remove(url)
-			self._urls.append(url)
-			return self._saved_requests[url]
+			res, ts = self._saved_requests[url]
+			if self.checkValid(ts) :
+				self._urls.append(url)
+				return res
+			else :
+				del self._saved_requests[url]
 		return None
 	
 	def add(self, url, response) :
 		if len(self._saved_requests) == self._maxlen :
 			oldest = self._urls.popleft()
 			del self._saved_requests[oldest]
-		self._saved_requests[url] = response
+		self._saved_requests[url] = response, int(time.time())
 		self._urls.append(url)
 
+if _request_cache_threshold < 60 :
+	raise ApiConfigurationError(f"The threshold for the request cache must be greater than a minute, but was set to {_request_cache_threshold} seconds")
 
 if _request_cache_maxlen > 0 :
-	_request_cache = HttpCache(_request_cache_maxlen)
+	_request_cache = HttpCache(_request_cache_maxlen, _request_cache_threshold)
 else :
 	_request_cache = None
 

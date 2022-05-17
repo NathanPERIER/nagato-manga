@@ -9,6 +9,7 @@
 	"api": {
 		"database.path": "nagato.db",
 		"requests.cache.maxlen": 50,
+		"requests.cache.threshold": 3600,
 		"requests.timeout.connect": 3.05,
 		"requests.timeout.read": 10,
 		"compression.cbz.additional_data": false

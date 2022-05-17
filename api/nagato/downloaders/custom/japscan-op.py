@@ -209,8 +209,9 @@ class JapscanOnePieceDownloader(BaseDownloader) :
 		if chapter_id not in chapters :
 			raise ApiQueryError(f"No chapter of id {chapter_id} found for One Piece on the Japscan site")
 		res = chapters[chapter_id]
-		urls = self._getChapterUrls(chapter_id)
-		return {**res, 'pages': len(urls)}
+		return res
+		# urls = self._getChapterUrls(chapter_id)
+		# return {**res, 'pages': len(urls)}
 	
 	def getMangaForChapter(self, chapter_id: str) -> str :
 		chapters = self._getChapterList()
