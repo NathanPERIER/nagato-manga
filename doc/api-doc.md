@@ -75,7 +75,7 @@ curl -X GET 'localhost:8090/api/version'
 HTTP/1.1 200 OK
 Content-Type: text/plain
 
-1.1
+1.2
 ```
 
 [`^ Back to top ^`][top]

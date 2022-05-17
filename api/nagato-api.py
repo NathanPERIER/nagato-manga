@@ -23,7 +23,7 @@ def getPing() :
 
 @app.route('/api/version', methods=['GET'])
 def getVersion() :
-	return Response('1.1', 200)
+	return Response('1.2', 200)
 
 @app.route('/api/sites', methods=['GET'])
 def getSites() :

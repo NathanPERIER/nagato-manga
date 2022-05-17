@@ -14,6 +14,6 @@ RUN apk update  \
 
 ENV NAGATO_API_PORT=8090
 
-LABEL version=1.1
+LABEL version=1.2
 
 ENTRYPOINT gunicorn --config default-config/gunicorn.conf.py nagato-api:app
