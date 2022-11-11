@@ -3,7 +3,7 @@ import { BrowserModule } from '@angular/platform-browser';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { DownloadPageComponent } from './component/download-page/download-page.component';
+import { DownloadPageComponent } from './component/pages/download-page/download-page.component';
 
 @NgModule({
   declarations: [
