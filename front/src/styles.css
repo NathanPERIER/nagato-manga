@@ -1,1 +1,47 @@
 /* You can add global styles to this file, and also import other style files */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fira+Mono&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Parisienne&display=swap');
+
+:root {
+	/* Colours */
+	--col-primary: #DE2828;
+	--col-canvas: #FCFCFC;
+	--col-background: #DCDCDC;
+	--col-link: #2A7fE8;
+	--col-text: #1A1A1A;
+	--col-text-contrast: #F5F5F5;
+	--col-border: #BDBDBD;
+	--col-border-faint: #EBEBEB;
+
+	/* Fonts */
+	--font-text: 'Inter', sans-serif;
+	--font-titles: 'Fira Mono', sans-serif;
+	--font-logo: 'Parisienne', sans-serif;
+
+	/* Font sizes */
+	--font-maxi: 24px;
+	--font-regular: 14px;
+	--font-tiny: 8px;
+
+	/* Spacings */
+	--sp-medium: 8px;
+	--sp-small: 4px;
+}
+
+body {
+	margin: 0px;
+	font-family: var(--font-text);
+	font-size: var(--font-regular);
+	color: var(--col-text);
+	background-color: var(--col-background);
+}
+
+a {
+	text-decoration: none;
+}
+
+a, a:hover, a:visited {
+	color: var(--col-link);
+}
