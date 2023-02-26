@@ -1,5 +1,5 @@
 
-from nagato.models import DataObject
+from nagato.models.dataobj import DataObject, ExtJson, RedExtJson
 
 import json
 
@@ -11,12 +11,6 @@ JsonLiteral = Union[None, bool, int, float, str]
 JsonMap     = Mapping[str, JsonLiteral]
 JsonList    = Sequence[JsonLiteral]
 Json        = Union[JsonLiteral, JsonMap, JsonList]
-
-# Extended JSON, including the `DataObject`
-ExtJsonLiteral = Union[None, bool, int, float, str, DataObject]
-ExtJsonMap     = Mapping[str, ExtJsonLiteral]
-ExtJsonList    = Sequence[ExtJsonLiteral]
-ExtJson        = Union[ExtJsonLiteral, ExtJsonMap, ExtJsonList]
 
 
 def loadJson(path: str) -> Json :
