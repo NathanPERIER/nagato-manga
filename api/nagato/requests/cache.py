@@ -1,10 +1,11 @@
 
-from nagato.utils.errors import ApiConfigurationError, ApiNotFoundError, ApiQueryError
 from nagato.utils import config
+from nagato.utils.errors import ApiConfigurationError, ApiNotFoundError, ApiQueryError
+from nagato.requests.result import Result
 
 import time
 from collections import deque
-from typing import MutableMapping, Tuple, Any
+from typing import MutableMapping, Any
 
 _request_cache_maxlen = config.getApiConf('requests.cache.maxlen')
 _request_cache_threshold = config.getApiConf('requests.cache.threshold')
@@ -18,28 +19,25 @@ class HttpCache :
 	def __init__(self, maxlen: int, threshold: int) :
 		self._maxlen = maxlen
 		self._threshold = threshold
-		self._saved_requests: MutableMapping[str,Tuple[Any,int]] = {}
+		self._saved_requests: MutableMapping[str,Result] = {}
 		self._urls: deque[str] = deque(maxlen = maxlen)
 	
-	def checkValid(self, ts: int) -> bool :
-		return ts - int(time.time()) < self._threshold
-
-	def get(self, url) :
+	def get(self, url: str) -> Any :
 		if url in self._saved_requests :
 			self._urls.remove(url)
-			res, ts = self._saved_requests[url]
-			if self.checkValid(ts) :
+			res = self._saved_requests[url]
+			if res.age() < self._threshold :
 				self._urls.append(url)
-				return res
+				return res.data
 			else :
 				del self._saved_requests[url]
 		return None
 	
-	def add(self, url: str, response: Any) :
+	def add(self, url: str, result: Result) :
 		if len(self._saved_requests) == self._maxlen :
 			oldest = self._urls.popleft()
 			del self._saved_requests[oldest]
-		self._saved_requests[url] = response, int(time.time())
+		self._saved_requests[url] = result
 		self._urls.append(url)
 
 if _request_cache_threshold < 60 :
